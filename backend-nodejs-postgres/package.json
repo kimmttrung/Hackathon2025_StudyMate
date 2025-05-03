@@ -1,0 +1,31 @@
+{
+  "name": "backend-nodejs-postgresql",
+  "version": "1.0.0",
+  "description": "backend nodejs with postgresql",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --exec babel-node src/server.js"
+  },
+  "keywords": [
+    "fullstack",
+    "backend",
+    "nodejs",
+    "postgresql"
+  ],
+  "author": "Mai Trung",
+  "license": "ISC",
+  "dependencies": {
+    "backend-nodejs-postgresql": "file:",
+    "dotenv": "^16.5.0",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "pg": "^8.15.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/node": "^7.12.10",
+    "@babel/preset-env": "^7.12.10",
+    "nodemon": "^3.1.10"
+  }
+}
