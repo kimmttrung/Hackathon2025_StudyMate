@@ -1,6 +1,6 @@
 import React from "react";
-import UserInfor from "./UserInfor";
 import DisplayInfor from "./DisplayInfor";
+import AddUserInfor from "./AddUserInfor";
 
 class MyComponent extends React.Component {
     state = {
@@ -16,7 +16,7 @@ class MyComponent extends React.Component {
 
         return (
             <div>
-                <UserInfor />
+                <AddUserInfor />
                 <br />
 
                 <DisplayInfor
