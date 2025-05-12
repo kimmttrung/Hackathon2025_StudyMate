@@ -1,8 +1,16 @@
 import React from "react";
 
 class DisplayInfor extends React.Component {
+    state = {
+        isShowisListUser: true
+    }
+    handleShowHide = () => {
+        this.setState({
+            isShowisListUser: !this.state.isShowisListUser
+        })
+    }
+
     render() {
-        // destructuring  
 
         // destructuring array/object
         const { listUser } = this.props; // object
@@ -10,16 +18,29 @@ class DisplayInfor extends React.Component {
 
         return (
             <div >
-                {listUser.map((user) => {
-                    return (
-                        <div key={user.id}>
-                            <div>My name is {user.name}</div>
-                            <div>My age is {user.age}</div>
-                            <hr />
-                        </div>
-                    )
-                })}
-            </div>
+
+
+                <div>
+                    <span onClick={() => { this.handleShowHide() }}>
+                        {this.state.isShowisListUser === true ? "Hide list user" : "Show list user"}
+                    </span>
+                    <div>
+                        {this.state.isShowisListUser &&
+                            <div>
+                                {listUser.map((user) => {
+                                    return (
+                                        <div key={user.id} className={+user.age > 18 ? "green" : "red"}>
+                                            <div>My name is {user.name}</div>
+                                            <div>My age is {user.age}</div>
+                                            <hr />
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div >
         )
     }
 
