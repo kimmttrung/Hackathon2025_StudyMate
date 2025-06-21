@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primary Colors */
+    --primary-blue: #2463eb;
+    --primary-background: #e5fdff;
+    --primary-foreground: #000000;
+
+    /* Secondary Colors */
+    --secondary-background: #ffffff;
+    --secondary-foreground: #333333;
+
+    /* Accent Colors */
+    --accent-color: #b7d8ec;
+    --accent-foreground: #ffffff;
+
+    /* Border Colors */
+    --border-primary: #b3b3b3;
+    --border-secondary: #f2010126;
+  }
+}
+
+@layer utilities {
+  /* Background Color Utilities */
+  .bg-primary-blue {
+    background-color: var(--primary-blue);
+  }
+
+  .bg-primary-background {
+    background-color: var(--primary-background);
+  }
+
+  .bg-secondary-background {
+    background-color: var(--secondary-background);
+  }
+
+  .bg-accent {
+    background-color: var(--accent-color);
+  }
+
+  /* Text Color Utilities */
+  .text-primary-foreground {
+    color: var(--primary-foreground);
+  }
+
+  .text-secondary-foreground {
+    color: var(--secondary-foreground);
+  }
+
+  .text-accent-foreground {
+    color: var(--accent-foreground);
+  }
+
+  /* Border Color Utilities */
+  .border-primary {
+    border-color: var(--border-primary);
+  }
+
+  .border-secondary {
+    border-color: var(--border-secondary);
+  }
+}
