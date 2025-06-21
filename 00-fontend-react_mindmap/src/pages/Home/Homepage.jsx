@@ -1,6 +1,7 @@
 import Header from "@/components/common/Header";
 import HeroSection from "@/components/common/HeroSection";
 import ChallengesSection from "./ChallengesSection";
+import SolutionsSection from "./SolutionsSection";
 
 
 const HomePage = () => {
@@ -9,7 +10,7 @@ const HomePage = () => {
       <Header />
       <HeroSection />
       <ChallengesSection />
-      {/* <SolutionsSection /> */}
+      <SolutionsSection />
       {/* <TestimonialsSection /> */}
       {/* <ContactSection /> */}
     </div>
