@@ -127,16 +127,24 @@ const Header = () => {
         {mobileMenuOpen && (
           <div className="max-lg:hidden bg-white border-t border-[#E2E8F0] py-4">
             <nav className="flex flex-col gap-4">
-              <a href="#challenges" className="text-[#64748B] px-4 py-2">
+              <a href="#challenges" className="text-[#64748B] px-4 py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 Thách thức
               </a>
-              <a href="#solutions" className="text-[#64748B] px-4 py-2">
+              <a href="#solutions" className="text-[#64748B] px-4 py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 Giải pháp
               </a>
-              <a href="#success" className="text-[#64748B] px-4 py-2">
+              <a href="#success" className="text-[#64748B] px-4 py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 Thành công
               </a>
-              <a href="#contact" className="text-[#64748B] px-4 py-2">
+              <a href="#contact" className="text-[#64748B] px-4 py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 Liên hệ
               </a>
               <div className="px-4 pt-2 flex flex-col gap-2">
