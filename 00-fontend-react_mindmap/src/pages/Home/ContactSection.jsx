@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+
 const ContactSection = () => {
+    const navigate = useNavigate();
+
     const handleButtonHover = (e, isEntering, type) => {
         if (type === 'primary') {
             if (isEntering) {
@@ -38,6 +42,7 @@ const ContactSection = () => {
                         className="px-12 py-5 bg-white text-[#6366F1] rounded-2xl font-bold text-2xl shadow-2xl transition-all duration-300 max-sm:w-full"
                         onMouseEnter={(e) => handleButtonHover(e, true, 'primary')}
                         onMouseLeave={(e) => handleButtonHover(e, false, 'primary')}
+                        onClick={() => navigate('/login')}
                     >
                         🎯 Dùng thử miễn phí ngay
                     </button>

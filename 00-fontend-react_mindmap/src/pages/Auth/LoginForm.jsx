@@ -87,7 +87,7 @@ const LoginForm = () => {
                 Về trang chủ
             </h3>
 
-            <div className="flex items-center justify-evenly mt-4">
+            <div className="flex items-center justify-evenly mt-4 gap-3">
                 <SocialButton icon="G" text="Google" />
                 <SocialButton icon="f" text="Facebook" className="[&>div:first-child]:bg-blue-600 [&>div:first-child]:text-white" />
             </div>
