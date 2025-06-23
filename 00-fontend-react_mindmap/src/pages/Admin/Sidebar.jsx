@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     Home, FileText, Image, Layers, ClipboardList, Users,
-    ShieldCheck, BarChart2, Settings, History, BookOpen, Menu as MenuIcon
+    ShieldCheck, UploadCloud, Settings, BrainCircuit, BookOpen, Menu as MenuIcon
 } from "lucide-react";
 import { useState } from "react";
 
@@ -29,7 +29,7 @@ const Sidebar = () => {
 
             {/* Menu */}
             <nav className="flex-1 overflow-y-auto px-2">
-                <SidebarItem icon={<Home className="w-5 h-5" />} label="Dashboard" to="/admin" active={isActive("/admin")} collapsed={collapsed} />
+                <SidebarItem icon={<Home className="w-5 h-5" />} label="Dashboard" to="/admin/dashboard" active={isActive("/admin/dashboard")} collapsed={collapsed} />
                 <SidebarSection title="Upload Input" collapsed={collapsed}>
                     <SidebarItem icon={<FileText className="w-5 h-5" />} label="PDF / Text" to="/admin/upload/text" active={isActive("/admin/upload/text")} collapsed={collapsed} />
                     <SidebarItem icon={<Image className="w-5 h-5" />} label="Image Upload" to="/admin/upload/image" active={isActive("/admin/upload/image")} collapsed={collapsed} />
@@ -39,10 +39,27 @@ const Sidebar = () => {
                     <SidebarItem icon={<Layers className="w-5 h-5" />} label="Mindmaps" to="/admin/mindmaps" active={isActive("/admin/mindmaps")} collapsed={collapsed} />
                     <SidebarItem icon={<BookOpen className="w-5 h-5" />} label="Quiz Generator" to="/admin/questions" active={isActive("/admin/questions")} collapsed={collapsed} />
                 </SidebarSection>
-                <SidebarSection title="User Management" collapsed={collapsed}>
-                    <SidebarItem icon={<Users className="w-5 h-5" />} label="Manage Users" to="/admin/manage-users" active={isActive("/admin/manage-users")} collapsed={collapsed} />
-                    <SidebarItem icon={<History className="w-5 h-5" />} label="User Logs" to="/admin/user-activity" active={isActive("/admin/user-activity")} collapsed={collapsed} />
-                    <SidebarItem icon={<BarChart2 className="w-5 h-5" />} label="User Stats" to="/admin/user-progress" active={isActive("/admin/user-progress")} collapsed={collapsed} />
+                <SidebarSection title=" Management" collapsed={collapsed}>
+                    <SidebarItem
+                        icon={<Users className="w-5 h-5" />}
+                        label="Manage Users" to="/admin/manage-users"
+                        active={isActive("/admin/manage-users")}
+                        collapsed={collapsed}
+                    />
+                    <SidebarItem
+                        icon={<UploadCloud className="w-5 h-5" />}
+                        label="Input"
+                        to="/admin/input-upload"
+                        active={isActive("/admin/input-upload")}
+                        collapsed={collapsed}
+                    />
+                    <SidebarItem
+                        icon={<BrainCircuit className="w-5 h-5" />}
+                        label="Output"
+                        to="/admin/generated-content"
+                        active={isActive("/admin/generated-content")}
+                        collapsed={collapsed}
+                    />
                 </SidebarSection>
                 <SidebarSection title="System" collapsed={collapsed}>
                     <SidebarItem icon={<Home className="w-5 h-5" />} label="Trang chủ" to="/" active={isActive("/")} collapsed={collapsed} />

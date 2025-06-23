@@ -76,7 +76,7 @@ const LoginForm = () => {
             <button
                 type="submit"
                 className="w-full p-3 bg-[#71da90] rounded-xl mt-2 hover:bg-[#0FC446] text-base md:text-sm text-white font-bold"
-                onClick={() => navigate('/admin')}
+                onClick={() => navigate('/admin/dashboard')}
             >
                 Đăng nhập
             </button>
