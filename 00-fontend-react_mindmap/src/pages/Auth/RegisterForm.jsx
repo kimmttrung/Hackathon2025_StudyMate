@@ -84,6 +84,7 @@ const RegisterForm = () => {
             <button
                 type="submit"
                 className="w-full py-3 bg-[#71da90] rounded-xl mt-2 hover:bg-[#0FC446] text-base font-bold text-white transition-all"
+                onClick={() => navigate('/login')}
             >
                 Create new account
             </button>
