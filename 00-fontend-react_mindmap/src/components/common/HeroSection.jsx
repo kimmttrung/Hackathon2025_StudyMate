@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+
 const HeroSection = () => {
+  const navigate = useNavigate();
+
   const handleButtonHover = (e, isEntering, type) => {
     if (type === 'primary') {
       if (isEntering) {
@@ -46,6 +50,7 @@ const HeroSection = () => {
             className="px-10 py-4 bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white rounded-2xl font-bold text-xl shadow-2xl transition-all duration-300 max-sm:w-full"
             onMouseEnter={(e) => handleButtonHover(e, true, 'primary')}
             onMouseLeave={(e) => handleButtonHover(e, false, 'primary')}
+            onClick={() => navigate('/login')}
           >
             🚀 Bắt đầu miễn phí ngay
           </button>
