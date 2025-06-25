@@ -17,10 +17,13 @@
   "license": "ISC",
   "dependencies": {
     "backend-nodejs-postgresql": "file:",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
-    "pg": "^8.15.6"
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",

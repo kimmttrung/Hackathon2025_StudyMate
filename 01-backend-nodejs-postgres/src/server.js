@@ -1,23 +1,7 @@
-import express from 'express';
-import viewEngine from './config/viewEngine';
-import initWebRoutes from './routes/web';
-require('dotenv').config();
+const app = require("./config/app");
+require("dotenv").config();
 
-const app = express()
-
-// config app
-
-const bodyParser = require('body-parser')
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
-
-viewEngine(app);
-initWebRoutes(app);
-
-let port = process.env.PORT;
-
+const port = process.env.PORT || 5001; //check file .env worked or not worked
 app.listen(port, () => {
-    console.log('Backend nodejs is running on the port: ' + port);
-})
-
-
+  console.log(`Server đang chạy cổng ${port}`);
+});
