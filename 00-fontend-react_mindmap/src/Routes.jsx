@@ -5,6 +5,7 @@ import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import Admin from './pages/Admin/Admin';
 import Dashboard from './pages/Admin/Dashboard';
+import FlashcardApp from './pages/Features/Flascard/Index';
 
 const AppRoutes = () => {
   return (
@@ -16,6 +17,7 @@ const AppRoutes = () => {
 
         <Route path="/admin" element={<Admin />}>
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="flashcards" element={<FlashcardApp />} />
         </Route>
 
       </Routes>
