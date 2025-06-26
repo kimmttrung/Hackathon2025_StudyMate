@@ -19,12 +19,11 @@ export function Layout({ children, title, showBackButton = true }) {
                     <div className="flex items-center gap-4">
                         {showBackButton && !isHomePage && (
                             <Button
-                                variant="ghost"
                                 size="sm"
-                                onClick={() => navigate("/admin/flashcards")}
-                                className="hover:bg-primary/10"
+                                onClick={() => navigate("/user/flashcards")}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-lg shadow hover:bg-pink-600 transition duration-200"
                             >
-                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                <ArrowLeft className="w-4 h-4" />
                                 Trang chủ
                             </Button>
                         )}

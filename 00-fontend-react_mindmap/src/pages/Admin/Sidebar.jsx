@@ -29,41 +29,37 @@ const Sidebar = () => {
 
             {/* Menu */}
             <nav className="flex-1 overflow-y-auto px-2">
-                <SidebarItem icon={<Home className="w-5 h-5" />} label="Dashboard" to="/admin/dashboard" active={isActive("/admin/dashboard")} collapsed={collapsed} />
-                {/* <SidebarSection title="Upload Input" collapsed={collapsed}>
-                    <SidebarItem icon={<FileText className="w-5 h-5" />} label="PDF / Text" to="/admin/upload/text" active={isActive("/admin/upload/text")} collapsed={collapsed} />
-                    <SidebarItem icon={<Image className="w-5 h-5" />} label="Image Upload" to="/admin/upload/image" active={isActive("/admin/upload/image")} collapsed={collapsed} />
-                </SidebarSection> */}
+                <SidebarItem icon={<Home className="w-5 h-5" />} label="Dashboard" to="/user/dashboard" active={isActive("/user/dashboard")} collapsed={collapsed} />
                 <SidebarSection title="" collapsed={collapsed}>
-                    <SidebarItem icon={<ClipboardList className="w-5 h-5" />} label="Flashcards" to="/admin/flashcards" active={isActive("/admin/flashcards")} collapsed={collapsed} />
-                    <SidebarItem icon={<Layers className="w-5 h-5" />} label="Mindmaps" to="/admin/mindmaps" active={isActive("/admin/mindmaps")} collapsed={collapsed} />
-                    <SidebarItem icon={<BookOpen className="w-5 h-5" />} label="Quiz Generator" to="/admin/questions" active={isActive("/admin/questions")} collapsed={collapsed} />
+                    <SidebarItem icon={<ClipboardList className="w-5 h-5" />} label="Flashcards" to="/user/flashcards" active={isActive("/user/flashcards")} collapsed={collapsed} />
+                    <SidebarItem icon={<Layers className="w-5 h-5" />} label="Mindmaps" to="/user/mindmaps" active={isActive("/user/mindmaps")} collapsed={collapsed} />
+                    <SidebarItem icon={<BookOpen className="w-5 h-5" />} label="Quiz Generator" to="/user/questions" active={isActive("/user/questions")} collapsed={collapsed} />
                 </SidebarSection>
                 {/* <SidebarSection title=" Management" collapsed={collapsed}>
                     <SidebarItem
                         icon={<Users className="w-5 h-5" />}
-                        label="Manage Users" to="/admin/manage-users"
-                        active={isActive("/admin/manage-users")}
+                        label="Manage Users" to="/user/manage-users"
+                        active={isActive("/user/manage-users")}
                         collapsed={collapsed}
                     />
                     <SidebarItem
                         icon={<UploadCloud className="w-5 h-5" />}
                         label="Input"
-                        to="/admin/input-upload"
-                        active={isActive("/admin/input-upload")}
+                        to="/user/input-upload"
+                        active={isActive("/user/input-upload")}
                         collapsed={collapsed}
                     />
                     <SidebarItem
                         icon={<BrainCircuit className="w-5 h-5" />}
                         label="Output"
-                        to="/admin/generated-content"
-                        active={isActive("/admin/generated-content")}
+                        to="/user/generated-content"
+                        active={isActive("/user/generated-content")}
                         collapsed={collapsed}
                     />
                 </SidebarSection> */}
                 <SidebarSection title="" collapsed={collapsed}>
                     <SidebarItem icon={<Home className="w-5 h-5" />} label="Trang chủ" to="/" active={isActive("/")} collapsed={collapsed} />
-                    <SidebarItem icon={<Settings className="w-5 h-5" />} label="Settings" to="/admin/settings" active={isActive("/admin/settings")} collapsed={collapsed} />
+                    <SidebarItem icon={<Settings className="w-5 h-5" />} label="Settings" to="/user/settings" active={isActive("/user/settings")} collapsed={collapsed} />
                 </SidebarSection>
             </nav>
 

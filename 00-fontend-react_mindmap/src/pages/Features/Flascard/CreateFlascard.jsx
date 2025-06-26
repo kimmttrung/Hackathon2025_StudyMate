@@ -13,7 +13,8 @@ import {
     Upload,
     FileText,
     FileUp,
-    ImageIcon, Edit3, Trash2
+    ImageIcon, Edit3, Trash2,
+    ArrowLeft
 } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -259,13 +260,12 @@ const CreateFlascard = () => {
         return (
             <Layout title={`Tạo Flashcard - ${selectedFolder.name}`}>
                 <div className="text-left">
-                    <Button
-                        variant="ghost"
-                        className="text-sm mb-2"
+                    <button
                         onClick={() => setSelectedFolder(null)}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-200"
                     >
-                        ← Quay lại danh sách thư mục
-                    </Button>
+                        <ArrowLeft className="w-4 h-4" /> Quay lại danh sách thư mục
+                    </button>
                 </div>
                 <div className="max-w-6xl mx-auto space-y-8">
                     {/* Header */}
