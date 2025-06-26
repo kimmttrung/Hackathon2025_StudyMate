@@ -20,7 +20,7 @@ const FlascardApp = () => {
             description:
                 "Khám phá và học tập với các thẻ flashcard được tổ chức trong thư mục",
             icon: BookOpen,
-            path: "/study",
+            path: "/admin/flashcards/study",
             className: "bg-study/20 border-study/30 hover:bg-study/30",
             iconColor: "bg-study text-study-foreground",
         },
@@ -28,7 +28,7 @@ const FlascardApp = () => {
             title: "Bài Kiểm Tra",
             description: "Thử thách kiến thức của bạn với các bài kiểm tra thực hành",
             icon: TestTube,
-            path: "/practice",
+            path: "/admin/flashcards/practice",
             className: "bg-test/20 border-test/30 hover:bg-test/30",
             iconColor: "bg-test text-test-foreground",
         },
@@ -37,7 +37,7 @@ const FlascardApp = () => {
             description:
                 "Tạo flashcard mới bằng cách tự viết hoặc sử dụng AI thông minh",
             icon: PlusCircle,
-            path: "/create",
+            path: "/admin/flashcards/create",
             className: "bg-create/20 border-create/30 hover:bg-create/30",
             iconColor: "bg-create text-create-foreground",
         },
@@ -45,7 +45,7 @@ const FlascardApp = () => {
             title: "Ôn Tập",
             description: "Xem lại tất cả flashcard và thư mục để củng cố kiến thức",
             icon: RotateCcw,
-            path: "/review",
+            path: "/admin/flashcards/review",
             className: "bg-review/20 border-review/30 hover:bg-review/30",
             iconColor: "bg-review text-review-foreground",
         },
@@ -54,7 +54,6 @@ const FlascardApp = () => {
     return (
         <Layout showBackButton={false}>
             <div className="max-w-6xl mx-auto space-y-12">
-                {/* Hero Section */}
                 <div className="text-center space-y-6 py-12">
                     <div className="inline-flex items-center gap-3 mb-6">
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-float">
@@ -106,7 +105,7 @@ const FlascardApp = () => {
                                 title={option.title}
                                 description={option.description}
                                 icon={option.icon}
-                                onClick={() => navigate(option.path)}
+                                path={option.path}
                                 className={option.className}
                                 iconColor={option.iconColor}
                             />
