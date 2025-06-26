@@ -7,8 +7,10 @@ import {
     LogOut,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+    const navigate = useNavigate();
     const chartData = [
         { name: "Users", value: 1204 },
         { name: "Flashcards", value: 3452 },
@@ -32,7 +34,10 @@ const Dashboard = () => {
                     <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
                     <p className="text-sm text-gray-500">Welcome back, Admin! 👋</p>
                 </div>
-                <button className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow">
+                <button
+                    className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow"
+                    onClick={() => navigate('/login')}
+                >
                     <LogOut className="w-4 h-4" /> Logout
                 </button>
             </div>

@@ -30,16 +30,16 @@ const Sidebar = () => {
             {/* Menu */}
             <nav className="flex-1 overflow-y-auto px-2">
                 <SidebarItem icon={<Home className="w-5 h-5" />} label="Dashboard" to="/admin/dashboard" active={isActive("/admin/dashboard")} collapsed={collapsed} />
-                <SidebarSection title="Upload Input" collapsed={collapsed}>
+                {/* <SidebarSection title="Upload Input" collapsed={collapsed}>
                     <SidebarItem icon={<FileText className="w-5 h-5" />} label="PDF / Text" to="/admin/upload/text" active={isActive("/admin/upload/text")} collapsed={collapsed} />
                     <SidebarItem icon={<Image className="w-5 h-5" />} label="Image Upload" to="/admin/upload/image" active={isActive("/admin/upload/image")} collapsed={collapsed} />
-                </SidebarSection>
-                <SidebarSection title="Generated Output" collapsed={collapsed}>
+                </SidebarSection> */}
+                <SidebarSection title="" collapsed={collapsed}>
                     <SidebarItem icon={<ClipboardList className="w-5 h-5" />} label="Flashcards" to="/admin/flashcards" active={isActive("/admin/flashcards")} collapsed={collapsed} />
                     <SidebarItem icon={<Layers className="w-5 h-5" />} label="Mindmaps" to="/admin/mindmaps" active={isActive("/admin/mindmaps")} collapsed={collapsed} />
                     <SidebarItem icon={<BookOpen className="w-5 h-5" />} label="Quiz Generator" to="/admin/questions" active={isActive("/admin/questions")} collapsed={collapsed} />
                 </SidebarSection>
-                <SidebarSection title=" Management" collapsed={collapsed}>
+                {/* <SidebarSection title=" Management" collapsed={collapsed}>
                     <SidebarItem
                         icon={<Users className="w-5 h-5" />}
                         label="Manage Users" to="/admin/manage-users"
@@ -60,8 +60,8 @@ const Sidebar = () => {
                         active={isActive("/admin/generated-content")}
                         collapsed={collapsed}
                     />
-                </SidebarSection>
-                <SidebarSection title="System" collapsed={collapsed}>
+                </SidebarSection> */}
+                <SidebarSection title="" collapsed={collapsed}>
                     <SidebarItem icon={<Home className="w-5 h-5" />} label="Trang chủ" to="/" active={isActive("/")} collapsed={collapsed} />
                     <SidebarItem icon={<Settings className="w-5 h-5" />} label="Settings" to="/admin/settings" active={isActive("/admin/settings")} collapsed={collapsed} />
                 </SidebarSection>
