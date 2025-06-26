@@ -37,7 +37,7 @@ const FlascardApp = () => {
             description:
                 "Tạo flashcard mới bằng cách tự viết hoặc sử dụng AI thông minh",
             icon: PlusCircle,
-            path: "/create",
+            path: "/admin/flashcards/create",
             className: "bg-create/20 border-create/30 hover:bg-create/30",
             iconColor: "bg-create text-create-foreground",
         },
@@ -54,7 +54,6 @@ const FlascardApp = () => {
     return (
         <Layout showBackButton={false}>
             <div className="max-w-6xl mx-auto space-y-12">
-                {/* Hero Section */}
                 <div className="text-center space-y-6 py-12">
                     <div className="inline-flex items-center gap-3 mb-6">
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-float">
@@ -106,7 +105,7 @@ const FlascardApp = () => {
                                 title={option.title}
                                 description={option.description}
                                 icon={option.icon}
-                                onClick={() => navigate(option.path)}
+                                path={option.path}
                                 className={option.className}
                                 iconColor={option.iconColor}
                             />

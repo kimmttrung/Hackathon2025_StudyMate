@@ -1,24 +1,25 @@
-
+import { useNavigate } from "react-router-dom";
 import { cn } from "./lib/utils";
 import { Card, CardContent } from "./ui/card";
-
 
 export function NavigationCard({
     title,
     description,
     icon: Icon,
-    onClick,
     className,
     iconColor,
+    path,
 }) {
+    const navigate = useNavigate();
+
     return (
         <Card
             className={cn(
                 "group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl border-2 overflow-hidden",
                 "hover:border-primary/50 active:scale-95",
-                className,
+                className
             )}
-            onClick={onClick}
+            onClick={() => navigate(path)}
         >
             <CardContent className="p-8 text-center space-y-4 relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -26,7 +27,7 @@ export function NavigationCard({
                 <div
                     className={cn(
                         "w-16 h-16 mx-auto rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110",
-                        iconColor || "bg-primary/10 text-primary",
+                        iconColor || "bg-primary/10 text-primary"
                     )}
                 >
                     <Icon className="w-8 h-8" />
