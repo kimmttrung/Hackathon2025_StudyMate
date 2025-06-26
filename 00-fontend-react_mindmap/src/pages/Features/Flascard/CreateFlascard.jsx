@@ -25,22 +25,26 @@ const CreateFlascard = () => {
         {
             id: 1,
             name: "Tiếng Anh cơ bản",
-            sets: [
-                { name: "Từ vựng A1", cards: 10 },
-                { name: "Từ vựng A2", cards: 15 },
-            ],
+            createdAt: "2024-06-01",
+            difficulty: "Dễ",
+            color: "bg-blue-100 text-blue-800",
+            cards: 25,
         },
         {
             id: 2,
             name: "Lịch sử Việt Nam",
-            sets: [
-                { name: "Thời kỳ Bắc thuộc", cards: 12 },
-            ],
+            createdAt: "2024-05-20",
+            difficulty: "Trung bình",
+            color: "bg-yellow-100 text-yellow-800",
+            cards: 12,
         },
         {
             id: 3,
             name: "Toán học THPT",
-            sets: [],
+            createdAt: "2024-04-10",
+            difficulty: "Khó",
+            color: "bg-red-100 text-red-800",
+            cards: 0,
         },
     ]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -122,7 +126,7 @@ const CreateFlascard = () => {
                         </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {folders
                             .filter((folder) =>
                                 folder.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -181,6 +185,71 @@ const CreateFlascard = () => {
                                     </div>
                                 </Card>
 
+                            ))}
+                    </div> */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {folders
+                            .filter((folder) =>
+                                folder.name.toLowerCase().includes(searchTerm.toLowerCase())
+                            )
+                            .map((folder) => (
+                                <Card
+                                    key={folder.id}
+                                    className="p-4 hover:shadow-md transition cursor-pointer group"
+                                    onClick={() => setSelectedFolder(folder)}
+                                >
+                                    <div
+                                        className="font-medium text-lg group-hover:text-create"
+                                    >
+                                        {folder.name}
+                                    </div>
+
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className={`text-xs px-2 py-0.5 rounded-full ${folder.color}`}>
+                                            {folder.difficulty}
+                                        </span>
+                                    </div>
+
+                                    <div className="text-sm text-muted-foreground mt-1">
+                                        🃏 {folder.cards} thẻ &nbsp;&nbsp;📅 {folder.createdAt}
+                                    </div>
+
+                                    <div className="flex justify-end gap-2 mt-3 text-sm text-muted-foreground">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-blue-500 hover:bg-blue-100"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const newName = prompt("Sửa tên thư mục:", folder.name);
+                                                if (newName) {
+                                                    setFolders(
+                                                        folders.map((f) =>
+                                                            f.id === folder.id ? { ...f, name: newName } : f
+                                                        )
+                                                    );
+                                                }
+                                            }}
+                                        >
+                                            <Edit3 className="w-4 h-4" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-red-500 hover:bg-red-100"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (
+                                                    confirm(`Bạn có chắc muốn xóa thư mục "${folder.name}"?`)
+                                                ) {
+                                                    setFolders(folders.filter((f) => f.id !== folder.id));
+                                                }
+                                            }}
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </Card>
                             ))}
                     </div>
                 </div>

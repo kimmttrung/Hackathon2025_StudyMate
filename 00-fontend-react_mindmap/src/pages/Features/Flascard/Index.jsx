@@ -66,7 +66,7 @@ const FlascardApp = () => {
                             <div className="flex items-center gap-1 justify-center mt-2">
                                 <Sparkles className="w-4 h-4 text-accent" />
                                 <span className="text-sm text-muted-foreground">
-                                    Powered by AI
+                                    Design by MickeAI
                                 </span>
                             </div>
                         </div>
