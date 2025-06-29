@@ -10,7 +10,12 @@ const Sidebar = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const isActive = (path) => location.pathname === path;
+    const isActive = (path) => {
+        if (path === "/") {
+            return location.pathname === "/";
+        }
+        return location.pathname.startsWith(path);
+    };
 
     return (
         <div className={`h-screen bg-slate-800 text-white flex flex-col justify-between transition-all duration-300 shadow-xl ${collapsed ? 'w-20' : 'w-64'}`}>

@@ -4,7 +4,7 @@ import {
     BookOpen,
     TestTube,
     PlusCircle,
-    RotateCcw,
+    Gamepad,
     Layers3,
     Sparkles,
 } from "lucide-react";
@@ -42,13 +42,13 @@ const FlascardApp = () => {
             iconColor: "bg-create text-create-foreground",
         },
         {
-            title: "Ôn Tập",
-            description: "Xem lại tất cả flashcard và thư mục để củng cố kiến thức",
-            icon: RotateCcw,
-            path: "/user/flashcards/review",
+            title: "Chơi Game",
+            description: "Ghép thẻ flashcard đúng trong thời gian giới hạn để chiến thắng",
+            icon: Gamepad,
+            path: "/user/flashcards/game",
             className: "bg-review/20 border-review/30 hover:bg-review/30",
             iconColor: "bg-review text-review-foreground",
-        },
+        }
     ];
 
     return (
