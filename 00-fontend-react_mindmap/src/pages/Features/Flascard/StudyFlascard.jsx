@@ -2,18 +2,37 @@ import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Folder, BookOpen, Clock, Star, Heart, Repeat, AlertCircle, RotateCw } from "lucide-react";
+import { Folder, BookOpen, Clock, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import classNames from "classnames";
 
 const StudyFlashcard = () => {
     const [selectedFolder, setSelectedFolder] = useState(null);
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
     const [searchTerm, setSearchTerm] = useState("");
     const [showBack, setShowBack] = useState(false);
-
     const [cardTags, setCardTags] = useState({}); // { "folderId_cardIndex": { review: true, favorite: true, wrong: false } }
+    const handlePrevCard = () => {
+        setShowBack(false);
+        if (currentCardIndex > 0) {
+            setCurrentCardIndex(currentCardIndex - 1);
+        }
+    };
+
+    const currentFolder = selectedFolder;
+    const currentCard = currentFolder?.cards?.[currentCardIndex];
+    const cardKey = `${selectedFolder?.id}_${currentCardIndex}`;
+
+    const handleNextCard = () => {
+        setShowBack(false);
+        if (currentCardIndex < currentFolder.cards.length - 1) {
+            setCurrentCardIndex(currentCardIndex + 1);
+        } else {
+            alert("Đã hoàn thành tất cả flashcard trong thư mục này!");
+            setSelectedFolder(null);
+            setCurrentCardIndex(0);
+        }
+    };
 
     const folders = [
         {
@@ -88,20 +107,7 @@ const StudyFlashcard = () => {
         },
     ];
 
-    const currentFolder = selectedFolder;
-    const currentCard = currentFolder?.cards?.[currentCardIndex];
-    const cardKey = `${selectedFolder?.id}_${currentCardIndex}`;
 
-    const handleNextCard = () => {
-        setShowBack(false);
-        if (currentCardIndex < currentFolder.cards.length - 1) {
-            setCurrentCardIndex(currentCardIndex + 1);
-        } else {
-            alert("Đã hoàn thành tất cả flashcard trong thư mục này!");
-            setSelectedFolder(null);
-            setCurrentCardIndex(0);
-        }
-    };
 
     const toggleTag = (type) => {
         setCardTags((prev) => ({
@@ -236,6 +242,7 @@ const StudyFlashcard = () => {
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-6 text-center">
+                            {/* Flashcard */}
                             <div
                                 className="relative w-full h-64 sm:h-72 cursor-pointer [perspective:1000px]"
                                 onClick={() => setShowBack(!showBack)}
@@ -256,6 +263,33 @@ const StudyFlashcard = () => {
                                 </div>
                             </div>
 
+                            {/* Nút chuyển trái phải */}
+                            {/* Nút chuyển trái/phải với icon đẹp */}
+                            <div className="flex justify-center items-center gap-6">
+                                <Button
+                                    variant="ghost"
+                                    className="rounded-full p-2"
+                                    onClick={handlePrevCard}
+                                    disabled={currentCardIndex === 0}
+                                >
+                                    <ChevronLeft className="w-6 h-6" />
+                                </Button>
+
+                                <span className="text-sm text-muted-foreground">
+                                    Thẻ {currentCardIndex + 1} / {selectedFolder.cards.length}
+                                </span>
+
+                                <Button
+                                    variant="ghost"
+                                    className="rounded-full p-2"
+                                    onClick={handleNextCard}
+                                    disabled={currentCardIndex === selectedFolder.cards.length - 1}
+                                >
+                                    <ChevronRight className="w-6 h-6" />
+                                </Button>
+                            </div>
+
+                            {/* Nút đánh giá */}
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 {["❌ Chưa nhớ", "🟡 Khó", "🟢 Tạm nhớ", "💚 Rất dễ"].map((label, i) => (
                                     <Button
@@ -268,32 +302,8 @@ const StudyFlashcard = () => {
                                     </Button>
                                 ))}
                             </div>
-
-                            <div className="flex justify-center gap-4 text-sm">
-                                <Button
-                                    variant={cardTags[cardKey]?.review ? "default" : "outline"}
-                                    onClick={() => toggleTag("review")}
-                                >
-                                    <Repeat className="w-4 h-4 mr-1" /> Cần ôn
-                                </Button>
-                                <Button
-                                    variant={cardTags[cardKey]?.favorite ? "default" : "outline"}
-                                    onClick={() => toggleTag("favorite")}
-                                >
-                                    <Heart className="w-4 h-4 mr-1" /> Yêu thích
-                                </Button>
-                                <Button
-                                    variant={cardTags[cardKey]?.wrong ? "default" : "outline"}
-                                    onClick={() => toggleTag("wrong")}
-                                >
-                                    <AlertCircle className="w-4 h-4 mr-1" /> Sai nhiều
-                                </Button>
-                            </div>
-
-                            <div className="text-xs text-muted-foreground mt-2">
-                                Thẻ {currentCardIndex + 1} / {selectedFolder.cards.length}
-                            </div>
                         </CardContent>
+
                     </Card>
                 )}
             </div>

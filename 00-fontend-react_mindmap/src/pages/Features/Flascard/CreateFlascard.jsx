@@ -17,11 +17,29 @@ import {
     ArrowLeft
 } from "lucide-react";
 import { useRef, useState } from "react";
+import { toast } from "react-toastify";
 
 
 
 const CreateFlascard = () => {
     const [selectedFolder, setSelectedFolder] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [cards, setCards] = useState([{ front: "", back: "" }]);
+    // const [front, setFront] = useState("");
+    const [showUploadMode, setShowUploadMode] = useState(true);
+    const [uploadedFileName, setUploadedFileName] = useState("");
+    const [uploadedIndex, setUploadedIndex] = useState(null);
+
+
+    const handleChange = (index, field, value) => {
+        const updatedCards = [...cards];
+        updatedCards[index][field] = value;
+        setCards(updatedCards);
+    };
+
+    const handleAddCardInput = () => {
+        setCards([...cards, { front: "", back: "" }]);
+    };
     const [folders, setFolders] = useState([
         {
             id: 1,
@@ -48,7 +66,6 @@ const CreateFlascard = () => {
             cards: 0,
         },
     ]);
-    const [searchTerm, setSearchTerm] = useState("");
 
     const uploadTemplates = [
         {
@@ -127,67 +144,6 @@ const CreateFlascard = () => {
                         </Button>
                     </div>
 
-                    {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {folders
-                            .filter((folder) =>
-                                folder.name.toLowerCase().includes(searchTerm.toLowerCase())
-                            )
-                            .map((folder) => (
-                                <Card
-                                    key={folder.id}
-                                    className="p-4 hover:shadow-md transition cursor-pointer group"
-                                >
-                                    <div
-                                        className="font-medium text-lg group-hover:text-create"
-                                        onClick={() => setSelectedFolder(folder)}
-                                    >
-                                        {folder.name}
-                                    </div>
-
-                                    <div className="text-sm text-muted-foreground mt-1">
-                                        📦 {folder.sets.length} bộ &nbsp;&nbsp;🃏{" "}
-                                        {folder.sets.reduce((acc, set) => acc + set.cards, 0)} thẻ
-                                    </div>
-
-                                    <div className="flex justify-end gap-2 mt-3 text-sm text-muted-foreground">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-blue-500 hover:bg-blue-100"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                const newName = prompt("Sửa tên thư mục:", folder.name);
-                                                if (newName) {
-                                                    setFolders(
-                                                        folders.map((f) =>
-                                                            f.id === folder.id ? { ...f, name: newName } : f
-                                                        )
-                                                    );
-                                                }
-                                            }}
-                                        >
-                                            <Edit3 className="w-4 h-4" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-red-500 hover:bg-red-100"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (
-                                                    confirm(`Bạn có chắc muốn xóa thư mục "${folder.name}"?`)
-                                                ) {
-                                                    setFolders(folders.filter((f) => f.id !== folder.id));
-                                                }
-                                            }}
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
-                                    </div>
-                                </Card>
-
-                            ))}
-                    </div> */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {folders
                             .filter((folder) =>
@@ -307,12 +263,6 @@ const CreateFlascard = () => {
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium">
-                                                    Tên bộ flashcard
-                                                </label>
-                                                <Input placeholder="VD: Từ vựng tiếng Anh cơ bản" />
-                                            </div>
 
                                             <div className="space-y-4">
                                                 <label className="text-sm font-medium">
@@ -321,109 +271,166 @@ const CreateFlascard = () => {
 
                                                 <Card className="border-dashed border-2 border-create/30">
                                                     <CardContent className="p-4 space-y-4">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                            <div className="space-y-2">
-                                                                <label className="text-sm font-medium">
-                                                                    Mặt trước
-                                                                </label>
-                                                                <Textarea
-                                                                    placeholder="Nhập nội dung mặt trước"
-                                                                    className="min-h-[100px]"
-                                                                />
+                                                        {cards.map((card, index) => (
+                                                            <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                <div className="space-y-2">
+                                                                    <label className="text-sm font-medium">Mặt trước</label>
+                                                                    <Textarea
+                                                                        placeholder="Nhập nội dung mặt trước"
+                                                                        className="min-h-[100px]"
+                                                                        value={card.front}
+                                                                        onChange={(e) => handleChange(index, "front", e.target.value)}
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <label className="text-sm font-medium">Mặt sau</label>
+                                                                    <Textarea
+                                                                        placeholder="Nhập nội dung mặt sau"
+                                                                        className="min-h-[100px]"
+                                                                        value={card.back}
+                                                                        onChange={(e) => handleChange(index, "back", e.target.value)}
+                                                                    />
+                                                                </div>
                                                             </div>
-                                                            <div className="space-y-2">
-                                                                <label className="text-sm font-medium">
-                                                                    Mặt sau
-                                                                </label>
-                                                                <Textarea
-                                                                    placeholder="Nhập nội dung mặt sau"
-                                                                    className="min-h-[100px]"
-                                                                />
-                                                            </div>
-                                                        </div>
+                                                        ))}
+
                                                         <Button
                                                             variant="outline"
                                                             className="w-full border-create text-create-foreground hover:bg-create/10"
+                                                            onClick={handleAddCardInput}
                                                         >
                                                             <PlusCircle className="w-4 h-4 mr-2" />
                                                             Thêm thẻ mới
                                                         </Button>
                                                     </CardContent>
                                                 </Card>
+
                                             </div>
 
-                                            <Button className="w-full bg-create hover:bg-create/90 text-create-foreground">
+                                            <Button
+                                                className="w-full bg-create hover:bg-create/90 text-create-foreground"
+                                            // onClick={handleAddCard}
+                                            >
                                                 Tạo bộ flashcard
                                             </Button>
+
                                         </CardContent>
                                     </Card>
                                 </TabsContent>
 
                                 {/* AI Creation */}
                                 <TabsContent value="ai" className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        {uploadTemplates.map((template, index) => {
-                                            const IconComponent = template.icon;
-                                            return (
-                                                <Card
-                                                    key={template.name}
-                                                    className="cursor-pointer transition-all duration-300 hover:scale-102 hover:shadow-md border-2 hover:border-create/50"
-                                                    onClick={() => handleUploadClick(index)}
-                                                >
-                                                    <CardContent className="p-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-lg bg-create/20 flex items-center justify-center">
-                                                                <IconComponent className="w-5 h-5 text-create-foreground" />
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <h3 className="font-medium">{template.name}</h3>
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    {template.description}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <input
-                                                            type="file"
-                                                            accept={template.accept}
-                                                            onChange={handleFileChange}
-                                                            className="hidden"
-                                                            ref={(el) => (fileInputsRef.current[index] = el)}
-                                                        />
-                                                    </CardContent>
-                                                </Card>
-                                            );
-                                        })}
+
+                                    {/* Nút toggle duy nhất */}
+                                    <div className="flex justify-end">
+                                        <Button onClick={() => setShowUploadMode(!showUploadMode)}>
+                                            {showUploadMode ? "Text" : "Upload"}
+                                        </Button>
                                     </div>
 
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle className="flex items-center gap-2">
-                                                <Upload className="w-5 h-5" />
-                                                Tạo với AI Assistant
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4">
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium">Chủ đề hoặc nội dung</label>
-                                                <Textarea
-                                                    placeholder="VD: Tạo 10 flashcard về từ vựng tiếng Anh chủ đề gia đình..."
-                                                    className="min-h-[120px]"
-                                                />
-                                            </div>
+                                    {/* Nếu đang ở chế độ Upload */}
+                                    {showUploadMode ? (
+                                        <>
+                                            <Card>
+                                                <CardHeader>
+                                                    <CardTitle className="flex items-center gap-2">
+                                                        <Upload className="w-5 h-5" />
+                                                        Chọn tệp để tải lên
+                                                    </CardTitle>
+                                                </CardHeader>
 
-                                            <div className="flex gap-2">
-                                                <Button variant="outline" className="flex-1">
-                                                    <Upload className="w-4 h-4 mr-2" />
-                                                    Tải file lên
-                                                </Button>
-                                                <Button className="flex-1 bg-gradient-to-r from-create to-accent text-white">
-                                                    <Sparkles className="w-4 h-4 mr-2" />
-                                                    Tạo bằng AI
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                                <CardContent className="space-y-6">
+                                                    {/* Các lựa chọn upload (PDF, DOC, IMAGE) */}
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                        {uploadTemplates.map((template, index) => {
+                                                            const IconComponent = template.icon;
+                                                            return (
+                                                                <Card
+                                                                    key={template.name}
+                                                                    className="cursor-pointer transition-all duration-300 hover:scale-102 hover:shadow-md border-2 hover:border-create/50"
+                                                                    onClick={() => {
+                                                                        if (uploadedFileName) {
+                                                                            toast.error("Bạn đã upload file rồi!");
+                                                                        } else {
+                                                                            document.getElementById(`file-${index}`)?.click();
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <CardContent className="p-4 space-y-2">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="w-10 h-10 rounded-lg bg-create/20 flex items-center justify-center">
+                                                                                <IconComponent className="w-5 h-5 text-create-foreground" />
+                                                                            </div>
+                                                                            <div className="flex-1">
+                                                                                <h3 className="font-medium">{template.name}</h3>
+                                                                                <p className="text-sm text-muted-foreground">{template.description}</p>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {/* input file */}
+                                                                        <input
+                                                                            id={`file-${index}`}
+                                                                            type="file"
+                                                                            accept={template.accept}
+                                                                            onChange={(e) => {
+                                                                                const file = e.target.files?.[0];
+                                                                                if (file) {
+                                                                                    setUploadedFileName(file.name);
+                                                                                    setUploadedIndex(index);
+                                                                                }
+                                                                            }}
+                                                                            className="hidden"
+                                                                        />
+
+                                                                        {/* Hiển thị tên file chỉ khi đúng index */}
+                                                                        {uploadedIndex === index && uploadedFileName && (
+                                                                            <div className="text-sm text-green-600">📄 Đã chọn: {uploadedFileName}</div>
+                                                                        )}
+                                                                    </CardContent>
+                                                                </Card>
+                                                            );
+                                                        })}
+                                                    </div>
+
+                                                    {/* Nút Tạo bằng AI */}
+                                                    <div className="flex justify-center">
+                                                        <Button className="mt-4 px-6 py-2 bg-gradient-to-r from-create to-accent text-white rounded-xl shadow-lg">
+                                                            <Sparkles className="w-4 h-4 mr-2" />
+                                                            Tạo bằng AI
+                                                        </Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+
+                                        </>
+                                    ) : (
+                                        <>
+                                            {/* Giao diện nhập nội dung */}
+                                            <Card>
+                                                <CardHeader>
+                                                    <CardTitle className="flex items-center gap-2">
+                                                        <Upload className="w-5 h-5" />
+                                                        Tạo với AI Assistant
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Chủ đề hoặc nội dung</label>
+                                                        <Textarea
+                                                            placeholder="VD: Tạo 10 flashcard về từ vựng tiếng Anh chủ đề gia đình..."
+                                                            className="min-h-[120px]"
+                                                        />
+                                                    </div>
+                                                    <Button className="w-full bg-gradient-to-r from-create to-accent text-white">
+                                                        <Sparkles className="w-4 h-4 mr-2" />
+                                                        Tạo bằng AI
+                                                    </Button>
+                                                </CardContent>
+                                            </Card>
+                                        </>
+                                    )}
                                 </TabsContent>
+
                             </Tabs>
                         </div>
 

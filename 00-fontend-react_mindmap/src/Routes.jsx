@@ -10,7 +10,7 @@ import PracticeTest from './pages/Features/Flascard/PracticeTest';
 import ReviewFlascard from './pages/Features/Flascard/ReviewFlascard';
 import User from './pages/User/User';
 import DashboardUser from './pages/User/DashboardUser';
-
+import { ToastContainer } from 'react-toastify';
 
 const AppRoutes = () => {
   return (
@@ -30,6 +30,17 @@ const AppRoutes = () => {
         </Route>
 
       </Routes>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        rtl={false}
+      />
 
     </Router>
   );
