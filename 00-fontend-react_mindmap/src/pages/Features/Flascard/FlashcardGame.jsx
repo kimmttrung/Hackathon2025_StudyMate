@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { Play, BookOpen, Clock, Target } from "lucide-react";
 import { flashcardFolders } from "@/data/flascards";
-import { Layout } from "@/components/Layout";
+import Layout from "@/components/Layout";
 
 export default function Index() {
     const navigate = useNavigate();

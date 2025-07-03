@@ -38,7 +38,7 @@ const Sidebar = () => {
                 <SidebarSection title="" collapsed={collapsed}>
                     <SidebarItem icon={<ClipboardList className="w-5 h-5" />} label="Flashcards" to="/user/flashcards" active={isActive("/user/flashcards")} collapsed={collapsed} />
                     <SidebarItem icon={<Layers className="w-5 h-5" />} label="Mindmaps" to="/user/mindmaps" active={isActive("/user/mindmaps")} collapsed={collapsed} />
-                    <SidebarItem icon={<BookOpen className="w-5 h-5" />} label="Quiz Generator" to="/user/questions" active={isActive("/user/questions")} collapsed={collapsed} />
+                    <SidebarItem icon={<BookOpen className="w-5 h-5" />} label="Quiz Generator" to="/user/quizs" active={isActive("/user/quizs")} collapsed={collapsed} />
                 </SidebarSection>
                 {/* <SidebarSection title=" Management" collapsed={collapsed}>
                     <SidebarItem

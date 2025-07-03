@@ -15,6 +15,7 @@ import FlascardGame from './pages/Features/Flascard/FlashcardGame';
 import NotFound from './pages/NotFound';
 import Game from './pages/Features/Flascard/Game';
 import GameComplete from './pages/Features/Flascard/GameComplete';
+import QuizApp from './pages/Features/Quiz/Index';
 
 const AppRoutes = () => {
   return (
@@ -29,10 +30,13 @@ const AppRoutes = () => {
           <Route path="flashcards" element={<FlashcardApp />} />
           <Route path="flashcards/create" element={<CreateFlascard />} />
           <Route path="flashcards/study" element={<StudyFlascard />} />
-          <Route path="flashcards/practice" element={<PracticeTest />} />
+          <Route path="flashcards/test" element={<PracticeTest />} />
           <Route path="flashcards/game" element={<FlascardGame />} />
           <Route path="flashcards/game/:folderId" element={<Game />} />
           <Route path="flashcards/game-complete" element={<GameComplete />} />
+
+          <Route path="quizs" element={<QuizApp />} />
+
         </Route>
         <Route path="*" element={<NotFound />} />
 

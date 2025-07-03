@@ -1,4 +1,5 @@
-import { Layout } from "@/components/Layout";
+// import { Layout } from "@/components/Layout";
+import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -177,10 +178,10 @@ const PracticeTest = () => {
                                         </div>
                                         <div
                                             className={`font-bold ${test.score >= 90
-                                                    ? "text-green-600"
-                                                    : test.score >= 70
-                                                        ? "text-blue-600"
-                                                        : "text-orange-600"
+                                                ? "text-green-600"
+                                                : test.score >= 70
+                                                    ? "text-blue-600"
+                                                    : "text-orange-600"
                                                 }`}
                                         >
                                             {test.score}%
