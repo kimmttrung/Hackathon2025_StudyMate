@@ -16,6 +16,7 @@ import NotFound from './pages/NotFound';
 import Game from './pages/Features/Flascard/Game';
 import GameComplete from './pages/Features/Flascard/GameComplete';
 import QuizApp from './pages/Features/Quiz/Index';
+import CreateQuestions from './pages/Features/Quiz/CreateQuestions';
 
 const AppRoutes = () => {
   return (
@@ -36,6 +37,7 @@ const AppRoutes = () => {
           <Route path="flashcards/game-complete" element={<GameComplete />} />
 
           <Route path="quizs" element={<QuizApp />} />
+          <Route path="quizs/create" element={<CreateQuestions />} />
 
         </Route>
         <Route path="*" element={<NotFound />} />

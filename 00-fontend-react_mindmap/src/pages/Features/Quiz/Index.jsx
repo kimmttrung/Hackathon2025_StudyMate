@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { NavigationCard } from "@/components/NavigationCard";
 import Layout from "@/components/Layout";
-
 const QuizApp = () => {
     const navigate = useNavigate();
 
@@ -22,7 +21,7 @@ const QuizApp = () => {
             title: "Tạo Câu Hỏi",
             description: "Upload tài liệu và tạo câu hỏi tự động bằng AI",
             icon: PlusCircle,
-            path: "/create-questions",
+            path: "/user/quizs/create",
             className: "bg-create/20 border-create/30 hover:bg-create/30",
             iconColor: "bg-create text-create-foreground",
         },
