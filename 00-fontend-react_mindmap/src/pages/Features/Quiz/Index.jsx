@@ -29,7 +29,7 @@ const QuizApp = () => {
             title: "Ôn Tập",
             description: "Luyện tập với câu hỏi đã tạo, lặp lại thông minh giúp bạn nhớ lâu",
             icon: BookOpen,
-            path: "/review",
+            path: "/user/quizs/study",
             className: "bg-study/20 border-study/30 hover:bg-study/30",
             iconColor: "bg-study text-study-foreground",
         },
