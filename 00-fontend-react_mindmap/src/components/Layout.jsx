@@ -119,7 +119,7 @@ const navigationMap = {
             },
             {
                 title: "Trò Chơi",
-                href: "/user/quizs/game",
+                href: "/user/quizs/games",
                 icon: Gamepad2,
                 description: "Học qua các trò chơi thú vị",
             },

@@ -18,6 +18,8 @@ import GameComplete from './pages/Features/Flascard/GameComplete';
 import QuizApp from './pages/Features/Quiz/Index';
 import CreateQuestions from './pages/Features/Quiz/CreateQuestions';
 import StudyQuiz from './pages/Features/Quiz/StudyQuiz';
+import TestQuiz from './pages/Features/Quiz/TestQuiz';
+import GameQuiz from './pages/Features/Quiz/GameQuiz';
 
 const AppRoutes = () => {
   return (
@@ -40,6 +42,8 @@ const AppRoutes = () => {
           <Route path="quizs" element={<QuizApp />} />
           <Route path="quizs/create" element={<CreateQuestions />} />
           <Route path="quizs/study" element={<StudyQuiz />} />
+          <Route path="quizs/test" element={<TestQuiz />} />
+          <Route path="quizs/games" element={<GameQuiz />} />
 
         </Route>
         <Route path="*" element={<NotFound />} />
