@@ -26,7 +26,6 @@ const CreateFlascard = () => {
     const [selectedFolder, setSelectedFolder] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [cards, setCards] = useState([{ front: "", back: "" }]);
-    // const [front, setFront] = useState("");
     const [showUploadMode, setShowUploadMode] = useState(true);
     const [uploadedFileName, setUploadedFileName] = useState("");
     const [uploadedIndex, setUploadedIndex] = useState(null);
@@ -102,6 +101,10 @@ const CreateFlascard = () => {
             console.log("File được chọn:", file.name);
             // Xử lý file tại đây
         }
+    }
+
+    const handleAddCard = () => {
+
     }
 
     const recentlyCreated = [

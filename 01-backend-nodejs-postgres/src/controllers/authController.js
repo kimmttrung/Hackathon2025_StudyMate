@@ -20,7 +20,8 @@ exports.register = async (req, res) => {
     }
 
     // Mã hoá mật khẩu
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Tạo người dùng mới
     await User.insertUser(email, hashedPassword);
@@ -52,24 +53,24 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
       // Có thể tạo JWT ở đây nếu cần
-      const payload = {
-        email: user.email,
-        name: user.username,
-        phone: user.phonenumber,
-        gender: user.gender,
-        nationality: user.nationality
-      }
+      // const payload = {
+      //   email: user.email,
+      //   name: user.username,
+      //   phone: user.phonenumber,
+      //   gender: user.gender,
+      //   nationality: user.nationality
+      // }
 
-      const access_token = jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        {
-          expiresIn: process.env.JWT_EXPIRE
-        }
-      )
+      // const access_token = jwt.sign(
+      //   payload,
+      //   process.env.JWT_SECRET,
+      //   {
+      //     expiresIn: process.env.JWT_EXPIRE
+      //   }
+      // )
 
       res.status(200).json({
-        access_token,
+        // access_token,
         msg: 'Login successful',
         success: true,
         // user: {
