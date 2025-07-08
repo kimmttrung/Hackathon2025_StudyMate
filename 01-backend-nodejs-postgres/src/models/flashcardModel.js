@@ -16,7 +16,7 @@ async function insertFlashcard(flashcard) {
   } = flashcard;
 
   const query = `
-    INSERT INTO Flashcard (
+    INSERT INTO Flashcards (
       folder_id, front_text, back_text,
       ease_factor, interval, repetition, last_quality,
       last_reviewed_at, next_review_at, last_update
@@ -37,7 +37,7 @@ async function insertFlashcard(flashcard) {
 // GET: Lấy tất cả flashcard theo folder
 async function getFlashcardByFolder(folder_id) {
   const query = `
-    SELECT * FROM Flashcard
+    SELECT * FROM Flashcards
     WHERE folder_id = $1
     ORDER BY created_at ASC;
   `;
@@ -49,7 +49,7 @@ async function getFlashcardByFolder(folder_id) {
 // GET: Lấy flashcard đến hạn ôn tập trong folder
 async function getFlashcardByDueDate(folder_id, dueDate = new Date()) {
   const query = `
-    SELECT * FROM Flashcard
+    SELECT * FROM Flashcards
     WHERE folder_id = $1
       AND next_review_at IS NOT NULL
       AND next_review_at <= $2
@@ -111,7 +111,7 @@ async function reviewFlashcard(user_id, flashcard_id, quality) {
 
   // 4. Cập nhật bảng Flashcard
   await client.query(
-    `UPDATE Flashcard SET
+    `UPDATE Flashcards SET
       ease_factor = $1,
       interval = $2,
       repetition = $3,

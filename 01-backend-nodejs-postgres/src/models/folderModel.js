@@ -3,7 +3,7 @@ const client = require('../config/db');
 // Tạo folder mới
 async function createFolder(user_id, name) {
   const query = `
-    INSERT INTO Folder (user_id, name)
+    INSERT INTO Folders (user_id, name)
     VALUES ($1, $2)
     RETURNING *;
   `;
@@ -20,7 +20,7 @@ async function getAllFolders(user_id, sortBy = 'created_at', sortOrder = 'asc') 
   const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'created_at';
 
   const query = `
-    SELECT * FROM Folder
+    SELECT * FROM Folders
     WHERE user_id = $1
     ORDER BY ${sortField} ${sortOrder.toUpperCase()};
   `;

@@ -40,6 +40,11 @@ const LoginForm = () => {
             const res = await axios.post(`/api/login`, { email, password });
             console.log(">>> check res", res);
             if (res.success) {
+                // lưu vào localStorage
+                if (res?.access_token) {
+                    // Lưu access_token
+                    localStorage.setItem("access_token", res.access_token);
+                }
                 toast.success(
                     "Login success! Welcome to MickeAI", {
                     position: "top-right",

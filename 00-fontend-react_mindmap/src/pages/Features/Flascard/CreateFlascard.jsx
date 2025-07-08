@@ -1,72 +1,99 @@
-// import { Layout } from "@/components/Layout";
-import Layout from "@/components/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    PlusCircle,
-    Bot,
-    User,
-    Sparkles,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import Layout from "@/components/Layout.jsx";
+import {
+    Plus,
+    Search,
+    Edit3,
+    Trash2,
     Upload,
     FileText,
+    Brain,
+    FolderOpen,
+    ArrowLeft,
+    Check,
+    X,
+    Sparkles,
+    File,
+    Image,
     FileUp,
-    ImageIcon, Edit3, Trash2,
-    ArrowLeft
+    ImageIcon,
+    PlusCircle,
+    User,
+    Bot,
 } from "lucide-react";
-import { useRef, useState } from "react";
-import { toast } from "react-toastify";
-
-
+import { toast } from 'react-toastify';
+import axios from "@/utils/axios.customize";
 
 const CreateFlascard = () => {
     const [selectedFolder, setSelectedFolder] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [name, setname] = useState("");
+    const [editingFolder, setEditingFolder] = useState(null);
+    const [uploadedContent, setUploadedContent] = useState("");
+    const [isGenerating, setIsGenerating] = useState(false);
     const [cards, setCards] = useState([{ front: "", back: "" }]);
     const [showUploadMode, setShowUploadMode] = useState(true);
-    const [uploadedFileName, setUploadedFileName] = useState("");
     const [uploadedIndex, setUploadedIndex] = useState(null);
+    const [uploadedFileName, setUploadedFileName] = useState("");
 
-
-    const handleChange = (index, field, value) => {
-        const updatedCards = [...cards];
-        updatedCards[index][field] = value;
-        setCards(updatedCards);
-    };
-
-    const handleAddCardInput = () => {
-        setCards([...cards, { front: "", back: "" }]);
-    };
-    const [folders, setFolders] = useState([
+    const [folders, setFolders] = useState([]);
+    const [questions, setQuestions] = useState([
         {
-            id: 1,
-            name: "Tiếng Anh cơ bản",
-            createdAt: "2024-06-01",
-            difficulty: "Dễ",
-            color: "bg-blue-100 text-blue-800",
-            cards: 25,
+            id: "1",
+            question: "Giải phương trình x² - 5x + 6 = 0",
+            answer: "x = 2 hoặc x = 3",
+            type: "open-ended",
+            difficulty: "medium",
         },
         {
-            id: 2,
-            name: "Lịch sử Việt Nam",
-            createdAt: "2024-05-20",
-            difficulty: "Trung bình",
-            color: "bg-yellow-100 text-yellow-800",
-            cards: 12,
-        },
-        {
-            id: 3,
-            name: "Toán học THPT",
-            createdAt: "2024-04-10",
-            difficulty: "Khó",
-            color: "bg-red-100 text-red-800",
-            cards: 0,
+            id: "2",
+            question: "Đạo hàm của hàm số f(x) = x³ là gì?",
+            answer: "3x²",
+            options: ["3x²", "x²", "3x", "x³"],
+            type: "multiple-choice",
+            difficulty: "easy",
         },
     ]);
 
+    const recentlyCreated = [
+        { name: "Từ vựng tiếng Anh", cards: 15, type: "user", date: "Hôm nay" },
+        { name: "Công thức Toán học", cards: 8, type: "ai", date: "Hôm qua" },
+        { name: "Lịch sử Việt Nam", cards: 12, type: "user", date: "2 ngày trước" },
+    ];
     const uploadTemplates = [
         {
             name: "Upload PDF",
@@ -87,138 +114,82 @@ const CreateFlascard = () => {
             accept: "image/*",
         },
     ];
+
     const fileInputsRef = useRef([]);
 
-    const handleUploadClick = (index) => {
-        if (fileInputsRef.current[index]) {
-            fileInputsRef.current[index].click();
-        }
+    const handleChange = (index, field, value) => {
+        const updatedCards = [...cards];
+        updatedCards[index][field] = value;
+        setCards(updatedCards);
     };
 
-    const handleFileChange = (event) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            console.log("File được chọn:", file.name);
-            // Xử lý file tại đây
-        }
-    }
+    const handleAddCardInput = () => {
+        setCards([...cards, { front: "", back: "" }]);
+    };
 
-    const handleAddCard = () => {
+    const filteredFolders = folders.filter((folder) =>
+        folder.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
 
-    }
 
-    const recentlyCreated = [
-        { name: "Từ vựng tiếng Anh", cards: 15, type: "user", date: "Hôm nay" },
-        { name: "Công thức Toán học", cards: 8, type: "ai", date: "Hôm qua" },
-        { name: "Lịch sử Việt Nam", cards: 12, type: "user", date: "2 ngày trước" },
-    ];
+    const handleCreateFolder = async () => {
+        const access_token = localStorage.getItem("access_token");
+        const payloadBase64 = access_token.split('.')[1];
+        const payload = JSON.parse(atob(payloadBase64));
+        const user_id = payload.id;
 
-    if (!selectedFolder) {
+        const res = await axios.post(`/api/folders/create`, { user_id, name })
+        console.log(">>>check res", res);
+    };
+
+    const handleEditFolder = (folder) => {
+
+    };
+
+    const handleDeleteFolder = (folderId) => {
+
+    };
+
+    const handleGenerateQuestions = async () => {
+        if (!uploadedContent.trim()) return;
+
+        setIsGenerating(true);
+        // Simulate AI generation
+        setTimeout(() => {
+            const newQuestions = [
+                {
+                    id: Date.now().toString(),
+                    question: "Câu hỏi mới được tạo từ nội dung đã upload",
+                    answer: "Đáp án được AI tạo ra",
+                    type: "open-ended",
+                    difficulty: "medium",
+                },
+                {
+                    id: (Date.now() + 1).toString(),
+                    question: "Câu hỏi trắc nghiệm từ tài liệu",
+                    answer: "Đáp án A",
+                    options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
+                    type: "multiple-choice",
+                    difficulty: "easy",
+                },
+            ];
+            setQuestions([...questions, ...newQuestions]);
+            setUploadedContent("");
+            setIsGenerating(false);
+        }, 2000);
+    };
+
+    // useEffect(() => {
+    //     const fetchFolders = async () => {
+    //         const res = await axios.get('/api/folders');
+    //         // setFolders(res.data);
+    //     };
+    //     fetchFolders();
+    // }, []);
+
+    if (selectedFolder) {
         return (
-            <Layout title="Thư mục Flashcard">
-                <div className="max-w-4xl mx-auto space-y-6">
-                    <div className="text-center space-y-2">
-                        <h1 className="text-3xl font-bold">Quản lý Thư mục</h1>
-                        <p className="text-muted-foreground">
-                            Tạo và chọn thư mục để bắt đầu tạo flashcard
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <Input
-                            placeholder="Tìm kiếm thư mục..."
-                            className="flex-1"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <Button
-                            className="bg-create text-white"
-                            onClick={() => {
-                                const newName = prompt("Nhập tên thư mục mới:");
-                                if (newName) {
-                                    setFolders([
-                                        ...folders,
-                                        { id: Date.now(), name: newName },
-                                    ]);
-                                }
-                            }}
-                        >
-                            <PlusCircle className="w-4 h-4 mr-2" />
-                            Thêm thư mục
-                        </Button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {folders
-                            .filter((folder) =>
-                                folder.name.toLowerCase().includes(searchTerm.toLowerCase())
-                            )
-                            .map((folder) => (
-                                <Card
-                                    key={folder.id}
-                                    className="p-4 hover:shadow-md transition cursor-pointer group"
-                                    onClick={() => setSelectedFolder(folder)}
-                                >
-                                    <div
-                                        className="font-medium text-lg group-hover:text-create"
-                                    >
-                                        {folder.name}
-                                    </div>
-
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className={`text-xs px-2 py-0.5 rounded-full ${folder.color}`}>
-                                            {folder.difficulty}
-                                        </span>
-                                    </div>
-
-                                    <div className="text-sm text-muted-foreground mt-1">
-                                        🃏 {folder.cards} thẻ &nbsp;&nbsp;📅 {folder.createdAt}
-                                    </div>
-
-                                    <div className="flex justify-end gap-2 mt-3 text-sm text-muted-foreground">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-blue-500 hover:bg-blue-100"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                const newName = prompt("Sửa tên thư mục:", folder.name);
-                                                if (newName) {
-                                                    setFolders(
-                                                        folders.map((f) =>
-                                                            f.id === folder.id ? { ...f, name: newName } : f
-                                                        )
-                                                    );
-                                                }
-                                            }}
-                                        >
-                                            <Edit3 className="w-4 h-4" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-red-500 hover:bg-red-100"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (
-                                                    confirm(`Bạn có chắc muốn xóa thư mục "${folder.name}"?`)
-                                                ) {
-                                                    setFolders(folders.filter((f) => f.id !== folder.id));
-                                                }
-                                            }}
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
-                                    </div>
-                                </Card>
-                            ))}
-                    </div>
-                </div>
-            </Layout>
-        );
-    } else {
-        return (
-            <Layout title={`Tạo Flashcard - ${selectedFolder.name}`}>
+            <Layout >
                 <div className="text-left">
                     <button
                         onClick={() => setSelectedFolder(null)}
@@ -507,7 +478,261 @@ const CreateFlascard = () => {
         );
     }
 
+    return (
+        <Layout>
+            <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Tạo Flashcard</h1>
+                        <p className="text-gray-600">
+                            Quản lý thư mục và tạo flashcard từ tài liệu
+                        </p>
+                    </div>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button className="bg-yellow-500 hover:bg-yellow-600">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Thêm thư mục
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Tạo thư mục mới</DialogTitle>
+                                <DialogDescription>
+                                    Nhập tên cho thư mục chứa câu hỏi của bạn
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                                <div>
+                                    <Label htmlFor="folder-name">Tên thư mục</Label>
+                                    <Input
+                                        id="folder-name"
+                                        placeholder="Ví dụ: Toán học lớp 12, Tiếng Anh cơ bản..."
+                                        value={name}
+                                        onChange={(e) => setname(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setname("")}>
+                                    Hủy
+                                </Button>
+                                <Button
+                                    onClick={handleCreateFolder}
+                                    disabled={!name.trim()}
+                                >
+                                    Tạo thư mục
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </div>
 
-};
+                {/* Search */}
+                <div className="relative max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                        placeholder="Tìm kiếm thư mục..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                    />
+                </div>
 
+                {/* Folders Grid */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredFolders.map((folder) => (
+                        <Card
+                            key={folders.id}
+                            className="hover:shadow-lg transition-all duration-300 cursor-pointer group"
+                        >
+                            <CardHeader className="pb-4">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center space-x-3 flex-1">
+                                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <FolderOpen className="w-5 h-5 text-blue-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <CardTitle className="text-lg group-hover:text-blue-600 transition-colors">
+                                                {folder.name}
+                                            </CardTitle>
+                                            <CardDescription>
+                                                {folder.flashcardCount} flashcard •{" "}
+                                                {new Date(folder.createdAt).toLocaleDateString("vi-VN")}
+                                            </CardDescription>
+                                        </div>
+                                    </div>
+                                    <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setEditingFolder({ ...folder });
+                                                    }}
+                                                >
+                                                    <Edit3 className="w-4 h-4" />
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                                <DialogHeader>
+                                                    <DialogTitle>Sửa tên thư mục</DialogTitle>
+                                                    <DialogDescription>
+                                                        Nhập tên mới cho thư mục
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <Label htmlFor="edit-folder-name">
+                                                            Tên thư mục
+                                                        </Label>
+                                                        <Input
+                                                            id="edit-folder-name"
+                                                            value={editingFolder?.name || ""}
+                                                            onChange={(e) =>
+                                                                setEditingFolder(
+                                                                    editingFolder
+                                                                        ? { ...editingFolder, name: e.target.value }
+                                                                        : null,
+                                                                )
+                                                            }
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <DialogFooter>
+                                                    <Button
+                                                        variant="outline"
+                                                    // onClick={() => setEditingFolder(null)}
+                                                    >
+                                                        Hủy
+                                                    </Button>
+                                                    <Button onClick={() => handleEditFolder(folder)}>
+                                                        Lưu
+                                                    </Button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </Dialog>
+
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-red-600 hover:text-red-700"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Xóa thư mục</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Bạn có chắc chắn muốn xóa thư mục "{folder.name}"?
+                                                        Tất cả câu hỏi trong thư mục sẽ bị xóa và không thể
+                                                        khôi phục.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Hủy</AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        onClick={() => handleDeleteFolder(folder.id)}
+                                                        className="bg-red-600 hover:bg-red-700"
+                                                    >
+                                                        Xóa
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent
+                                className="pt-0 cursor-pointer"
+                                onClick={() => setSelectedFolder(folder)}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <Badge
+                                        variant="secondary"
+                                        className="bg-blue-50 text-blue-700"
+                                    >
+                                        {folder.flashcardCount} câu hỏi
+                                    </Badge>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        Mở thư mục
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+
+                {filteredFolders.length === 0 && (
+                    <div className="text-center py-12">
+                        <FolderOpen className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                            {searchTerm ? "Không tìm thấy thư mục" : "Chưa có thư mục nào"}
+                        </h3>
+                        <p className="text-gray-600 mb-6">
+                            {searchTerm
+                                ? "Thử tìm kiếm với từ khóa khác"
+                                : "Tạo thư mục đầu tiên để bắt đầu tổ chức câu hỏi của bạn"}
+                        </p>
+                        {!searchTerm && (
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button className="bg-blue-600 hover:bg-blue-700">
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Tạo thư mục đầu tiên
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Tạo thư mục mới</DialogTitle>
+                                        <DialogDescription>
+                                            Nhập tên cho thư mục chứa câu hỏi của bạn
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label htmlFor="folder-name">Tên thư mục</Label>
+                                            <Input
+                                                id="folder-name"
+                                                placeholder="Ví dụ: Toán học lớp 12, Tiếng Anh cơ bản..."
+                                                value={name}
+                                                onChange={(e) => setname(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => setname("")}
+                                        >
+                                            Hủy
+                                        </Button>
+                                        <Button
+                                            onClick={handleCreateFolder}
+                                            disabled={!name.trim()}
+                                        >
+                                            Tạo thư mục
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                        )}
+                    </div>
+                )}
+            </div>
+        </Layout>
+    );
+}
 export default CreateFlascard;

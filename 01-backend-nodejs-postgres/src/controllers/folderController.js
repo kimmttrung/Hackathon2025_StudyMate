@@ -3,6 +3,7 @@ const folderModel = require('../models/folderModel');
 // Tạo folder mới
 async function createFolder(req, res) {
   const { user_id, name } = req.body;
+  console.log("check body", req.body);
 
   if (!user_id || !name) {
     return res.status(400).json({ error: 'user_id and name are required' });

@@ -53,33 +53,25 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
       // Có thể tạo JWT ở đây nếu cần
-      // const payload = {
-      //   email: user.email,
-      //   name: user.username,
-      //   phone: user.phonenumber,
-      //   gender: user.gender,
-      //   nationality: user.nationality
-      // }
+      const payload = {
+        email: user.email,
+        name: user.username,
+        id: user.id,
+      }
 
-      // const access_token = jwt.sign(
-      //   payload,
-      //   process.env.JWT_SECRET,
-      //   {
-      //     expiresIn: process.env.JWT_EXPIRE
-      //   }
-      // )
+      const access_token = jwt.sign(
+        payload,
+        process.env.JWT_SECRET,
+        {
+          expiresIn: process.env.JWT_EXPIRE
+        }
+      )
 
       res.status(200).json({
-        // access_token,
+        access_token,
         msg: 'Login successful',
         success: true,
-        // user: {
-        //   email: user.email,
-        //   name: user.username, // ← Gửi name đúng tên key mong muốn ở FE
-        //   phone: user.phonenumber,
-        //   gender: user.gender,
-        //   nationality: user.nationality
-        // } // hoặc thêm userId, token nếu có
+
       });
     } else {
       res.status(401).json({ msg: 'Retriving user failed' });

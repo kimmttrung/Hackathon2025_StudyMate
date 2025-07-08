@@ -52,6 +52,12 @@ import {
 
 export default function CreateQuestions() {
     const [selectedFolder, setSelectedFolder] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [newFolderName, setNewFolderName] = useState("");
+    const [editingFolder, setEditingFolder] = useState(null);
+    const [uploadedContent, setUploadedContent] = useState("");
+    const [isGenerating, setIsGenerating] = useState(false);
+
     const [folders, setFolders] = useState([
         {
             id: "1",
@@ -89,11 +95,6 @@ export default function CreateQuestions() {
             difficulty: "easy",
         },
     ]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [newFolderName, setNewFolderName] = useState("");
-    const [editingFolder, setEditingFolder] = useState(null);
-    const [uploadedContent, setUploadedContent] = useState("");
-    const [isGenerating, setIsGenerating] = useState(false);
 
     const filteredFolders = folders.filter((folder) =>
         folder.name.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -339,7 +340,6 @@ export default function CreateQuestions() {
     return (
         <Layout>
             <div className="space-y-6">
-                {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">Tạo Câu Hỏi</h1>
@@ -373,7 +373,9 @@ export default function CreateQuestions() {
                                 </div>
                             </div>
                             <DialogFooter>
-                                <Button variant="outline" onClick={() => setNewFolderName("")}>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setNewFolderName("")}>
                                     Hủy
                                 </Button>
                                 <Button
