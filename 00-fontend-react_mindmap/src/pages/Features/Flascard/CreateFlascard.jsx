@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -61,7 +61,7 @@ import axios from "@/utils/axios.customize";
 const CreateFlascard = () => {
     const [selectedFolder, setSelectedFolder] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
-    const [name, setname] = useState("");
+    const [name, setName] = useState("");
     const [editingFolder, setEditingFolder] = useState(null);
     const [uploadedContent, setUploadedContent] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
@@ -133,13 +133,16 @@ const CreateFlascard = () => {
 
 
     const handleCreateFolder = async () => {
-        const access_token = localStorage.getItem("access_token");
-        const payloadBase64 = access_token.split('.')[1];
-        const payload = JSON.parse(atob(payloadBase64));
-        const user_id = payload.id;
-
-        const res = await axios.post(`/api/folders/create`, { user_id, name })
-        console.log(">>>check res", res);
+        const user_id = getUserIdFromToken();
+        if (!user_id || !name.trim()) return;
+        try {
+            const res = await axios.post(`/api/folders/create`, { user_id, name });
+            await fetchFolders(); // cập nhật lại danh sách
+            toast.success("Tạo thư mục thành công!")
+        } catch (error) {
+            toast.error("Lỗi khi tạo thư mục");
+            console.error(err);
+        }
     };
 
     const handleEditFolder = (folder) => {
@@ -179,13 +182,40 @@ const CreateFlascard = () => {
         }, 2000);
     };
 
-    // useEffect(() => {
-    //     const fetchFolders = async () => {
-    //         const res = await axios.get('/api/folders');
-    //         // setFolders(res.data);
-    //     };
-    //     fetchFolders();
-    // }, []);
+    // Hàm lấy user_id từ token
+    const getUserIdFromToken = () => {
+        const access_token = localStorage.getItem("access_token");
+        const payloadBase64 = access_token.split('.')[1];
+        const payload = JSON.parse(atob(payloadBase64));
+        if (!payload) return null;
+
+        try {
+            return payload.id; // hoặc decoded.user_id tùy backend
+        } catch (err) {
+            console.error("Token invalid:", err);
+            return null;
+        }
+    };
+
+    const fetchFolders = async () => {
+        const user_id = getUserIdFromToken();
+        if (!user_id) {
+            return;
+        } else {
+            try {
+                const res = await axios.get(`/api/folders/${user_id}`)
+                console.log(">>>check res", res);
+                setFolders(res); // gán dữ liệu vào state
+            } catch (error) {
+                toast.error("Lỗi khi lấy danh sách thư mục:", err);
+            }
+
+        }
+    }
+
+    useEffect(() => {
+        fetchFolders();
+    }, []);
 
     if (selectedFolder) {
         return (
@@ -509,14 +539,14 @@ const CreateFlascard = () => {
                                         id="folder-name"
                                         placeholder="Ví dụ: Toán học lớp 12, Tiếng Anh cơ bản..."
                                         value={name}
-                                        onChange={(e) => setname(e.target.value)}
+                                        onChange={(e) => setName(e.target.value)}
                                     />
                                 </div>
                             </div>
                             <DialogFooter>
                                 <Button
                                     variant="outline"
-                                    onClick={() => setname("")}>
+                                    onClick={() => setName("")}>
                                     Hủy
                                 </Button>
                                 <Button
@@ -560,7 +590,7 @@ const CreateFlascard = () => {
                                             </CardTitle>
                                             <CardDescription>
                                                 {folder.flashcardCount} flashcard •{" "}
-                                                {new Date(folder.createdAt).toLocaleDateString("vi-VN")}
+                                                {new Date(folder.created_at).toLocaleDateString("vi-VN")}
                                             </CardDescription>
                                         </div>
                                     </div>
@@ -593,13 +623,13 @@ const CreateFlascard = () => {
                                                         <Input
                                                             id="edit-folder-name"
                                                             value={editingFolder?.name || ""}
-                                                            onChange={(e) =>
-                                                                setEditingFolder(
-                                                                    editingFolder
-                                                                        ? { ...editingFolder, name: e.target.value }
-                                                                        : null,
-                                                                )
-                                                            }
+                                                        // onChange={(e) =>
+                                                        //     setEditingFolder(
+                                                        //         editingFolder
+                                                        //             ? { ...editingFolder, name: e.target.value }
+                                                        //             : null,
+                                                        //     )
+                                                        // }
                                                         />
                                                     </div>
                                                 </div>
@@ -708,14 +738,14 @@ const CreateFlascard = () => {
                                                 id="folder-name"
                                                 placeholder="Ví dụ: Toán học lớp 12, Tiếng Anh cơ bản..."
                                                 value={name}
-                                                onChange={(e) => setname(e.target.value)}
+                                                onChange={(e) => setName(e.target.value)}
                                             />
                                         </div>
                                     </div>
                                     <DialogFooter>
                                         <Button
                                             variant="outline"
-                                            onClick={() => setname("")}
+                                            onClick={() => setName("")}
                                         >
                                             Hủy
                                         </Button>
