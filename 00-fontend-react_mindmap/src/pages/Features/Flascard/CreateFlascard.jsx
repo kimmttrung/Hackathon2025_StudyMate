@@ -57,6 +57,7 @@ import {
 } from "lucide-react";
 import { toast } from 'react-toastify';
 import axios from "@/utils/axios.customize";
+import { DialogClose } from "@radix-ui/react-dialog";
 
 const CreateFlascard = () => {
     const [selectedFolder, setSelectedFolder] = useState(null);
@@ -69,7 +70,6 @@ const CreateFlascard = () => {
     const [showUploadMode, setShowUploadMode] = useState(true);
     const [uploadedIndex, setUploadedIndex] = useState(null);
     const [uploadedFileName, setUploadedFileName] = useState("");
-
     const [folders, setFolders] = useState([]);
     const [questions, setQuestions] = useState([
         {
@@ -137,20 +137,46 @@ const CreateFlascard = () => {
         if (!user_id || !name.trim()) return;
         try {
             const res = await axios.post(`/api/folders/create`, { user_id, name });
-            await fetchFolders(); // cập nhật lại danh sách
-            toast.success("Tạo thư mục thành công!")
+            // Cập nhật state nếu muốn
+            await fetchFolders();
+
+            toast.success("Cập nhật thành công");
+            setEditingFolder(null); // Đóng Dialog
         } catch (error) {
             toast.error("Lỗi khi tạo thư mục");
             console.error(err);
         }
     };
 
-    const handleEditFolder = (folder) => {
+    const handleEditFolder = async (folder) => {
+        if (!folder?.id || !folder?.name?.trim()) {
+            toast.error("Tên thư mục không hợp lệ");
+            return;
+        }
+        console.log(">>> check folder", folder);
+        try {
+            const res = await axios.put(`/api/folders/${folder.id}`, {
+                name: folder.name.trim(),
+            })
+            toast.success("Đã cập nhật thư mục");
+            await fetchFolders();
+            // setEditingFolder(null);
+        } catch (error) {
 
+        }
     };
 
-    const handleDeleteFolder = (folderId) => {
-
+    const handleDeleteFolder = async (folderId) => {
+        if (!folderId) return;
+        try {
+            await axios.delete(`/api/folders/${folderId}`);
+            // Xoá thành công → cập nhật danh sách
+            setFolders((prev) => prev.filter((f) => f.id !== folderId));
+            toast.success("Xóa thư mục thành công");
+        } catch (error) {
+            console.error("Lỗi khi xóa thư mục:", err);
+            toast.error("Không thể xóa thư mục");
+        }
     };
 
     const handleGenerateQuestions = async () => {
@@ -209,7 +235,6 @@ const CreateFlascard = () => {
             } catch (error) {
                 toast.error("Lỗi khi lấy danh sách thư mục:", err);
             }
-
         }
     }
 
@@ -544,17 +569,21 @@ const CreateFlascard = () => {
                                 </div>
                             </div>
                             <DialogFooter>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setName("")}>
-                                    Hủy
-                                </Button>
-                                <Button
-                                    onClick={handleCreateFolder}
-                                    disabled={!name.trim()}
-                                >
-                                    Tạo thư mục
-                                </Button>
+                                <DialogClose asChild>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setName("")}>
+                                        Hủy
+                                    </Button>
+                                </DialogClose>
+                                <DialogClose asChild>
+                                    <Button
+                                        onClick={handleCreateFolder}
+                                        disabled={!name.trim()}
+                                    >
+                                        Tạo thư mục
+                                    </Button>
+                                </DialogClose>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
@@ -602,49 +631,58 @@ const CreateFlascard = () => {
                                                     size="sm"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setEditingFolder({ ...folder });
+                                                        setEditingFolder(folder); // Gán folder đang sửa
                                                     }}
                                                 >
                                                     <Edit3 className="w-4 h-4" />
                                                 </Button>
                                             </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>Sửa tên thư mục</DialogTitle>
-                                                    <DialogDescription>
-                                                        Nhập tên mới cho thư mục
-                                                    </DialogDescription>
-                                                </DialogHeader>
-                                                <div className="space-y-4">
-                                                    <div>
-                                                        <Label htmlFor="edit-folder-name">
-                                                            Tên thư mục
-                                                        </Label>
-                                                        <Input
-                                                            id="edit-folder-name"
-                                                            value={editingFolder?.name || ""}
-                                                        // onChange={(e) =>
-                                                        //     setEditingFolder(
-                                                        //         editingFolder
-                                                        //             ? { ...editingFolder, name: e.target.value }
-                                                        //             : null,
-                                                        //     )
-                                                        // }
-                                                        />
+                                            {editingFolder && (
+                                                <DialogContent>
+                                                    <DialogHeader>
+                                                        <DialogTitle>Sửa tên thư mục</DialogTitle>
+                                                        <DialogDescription>
+                                                            Nhập tên mới cho thư mục
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <Label htmlFor="edit-folder-name">
+                                                                Tên thư mục
+                                                            </Label>
+                                                            <Input
+                                                                id="edit-folder-name"
+                                                                value={editingFolder?.name || ""}
+                                                                onChange={(e) =>
+                                                                    setEditingFolder((prev) =>
+                                                                        prev ? { ...prev, name: e.target.value } : prev
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <DialogFooter>
-                                                    <Button
-                                                        variant="outline"
-                                                    // onClick={() => setEditingFolder(null)}
-                                                    >
-                                                        Hủy
-                                                    </Button>
-                                                    <Button onClick={() => handleEditFolder(folder)}>
-                                                        Lưu
-                                                    </Button>
-                                                </DialogFooter>
-                                            </DialogContent>
+                                                    <DialogFooter>
+                                                        <DialogClose asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={() => setEditingFolder(null)}
+                                                            >
+                                                                Hủy
+                                                            </Button>
+                                                        </DialogClose>
+
+                                                        <DialogClose asChild>
+                                                            <Button
+                                                                onClick={() => {
+                                                                    handleEditFolder(editingFolder);
+                                                                }}
+                                                            >
+                                                                Lưu
+                                                            </Button>
+                                                        </DialogClose>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            )}
                                         </Dialog>
 
                                         <AlertDialog>
@@ -670,8 +708,8 @@ const CreateFlascard = () => {
                                                 <AlertDialogFooter>
                                                     <AlertDialogCancel>Hủy</AlertDialogCancel>
                                                     <AlertDialogAction
-                                                        onClick={() => handleDeleteFolder(folder.id)}
                                                         className="bg-red-600 hover:bg-red-700"
+                                                        onClick={() => handleDeleteFolder(folder.id)}
                                                     >
                                                         Xóa
                                                     </AlertDialogAction>

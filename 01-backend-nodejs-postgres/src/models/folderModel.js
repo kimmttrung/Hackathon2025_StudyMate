@@ -29,7 +29,25 @@ async function getAllFolders(user_id, sortBy = 'created_at', sortOrder = 'asc') 
   return result.rows;
 }
 
+async function deleteFolder(id) {
+  const query = 'DELETE FROM folders WHERE id = $1';
+  await client.query(query, [id]);
+}
+
+async function updateFolderName(id, name) {
+  const query = `
+    UPDATE folders
+    SET name = $1, last_update = CURRENT_TIMESTAMP
+    WHERE id = $2
+    RETURNING *
+  `;
+  const result = await client.query(query, [name, id]);
+  return result.rows[0];
+}
+
 module.exports = {
   createFolder,
   getAllFolders,
+  deleteFolder,
+  updateFolderName
 };

@@ -6,7 +6,8 @@ const folderController = require('../controllers/folderController');
 router.post('/create', folderController.createFolder);
 
 // GET /folders/:user_id - lấy folder theo user, có sắp xếp
-// Ví dụ: /folders/1?sortBy=name&sortOrder=desc
 router.get('/:user_id', folderController.getAllFolders);
+router.delete('/:id', folderController.deleteFolderController);
+router.put("/:id", folderController.updateFolderNameController);
 
 module.exports = router;

@@ -31,7 +31,39 @@ async function getAllFolders(req, res) {
   }
 }
 
+async function deleteFolderController(req, res) {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Folder id is required' });
+  }
+  try {
+    await folderModel.deleteFolder(id);
+    res.status(200).json({ message: 'Folder deleted successfully' });
+  } catch {
+    console.error('Error deleting folder:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
+async function updateFolderNameController(req, res) {
+  const { id } = req.params;
+  const { name } = req.body;
+
+  if (!id || !name) {
+    return res.status(400).json({ error: 'Folder id and name are required' });
+  }
+
+  try {
+    const updated = await folderModel.updateFolderName(id, name);
+    res.status(200).json(updated);
+  } catch (error) {
+    console.error('Error updating folder name:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
 module.exports = {
   createFolder,
   getAllFolders,
+  deleteFolderController,
+  updateFolderNameController,
 };
