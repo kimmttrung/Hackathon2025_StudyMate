@@ -132,9 +132,38 @@ async function reviewFlashcard(user_id, flashcard_id, quality) {
   };
 }
 
+// UPDATE: Cập nhật flashcard (chỉ front & back)
+async function updateFlashcard(id, front_text, back_text) {
+  const query = `
+    UPDATE Flashcards
+    SET front_text = $1,
+        back_text = $2,
+        last_update = NOW()
+    WHERE id = $3
+    RETURNING *;
+  `;
+  const values = [front_text, back_text, id];
+  const result = await client.query(query, values);
+  return result.rows[0];
+}
+
+// DELETE: Xoá flashcard theo ID
+async function deleteFlashcard(flashcardId) {
+  const query = `
+    DELETE FROM Flashcards
+    WHERE id = $1
+    RETURNING *;
+  `;
+
+  const result = await client.query(query, [flashcardId]);
+  return result.rows[0]; // Trả về flashcard đã xoá (nếu có)
+}
+
 module.exports = {
   insertFlashcard,
   getFlashcardByFolder,
   getFlashcardByDueDate,
   reviewFlashcard,
+  updateFlashcard,
+  deleteFlashcard,
 };

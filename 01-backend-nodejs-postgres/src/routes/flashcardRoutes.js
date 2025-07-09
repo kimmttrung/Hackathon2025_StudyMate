@@ -14,4 +14,10 @@ router.get('/folder/:folderId/due', flashcardController.getFlashcardsByDueDate);
 // POST /flashcards/:flashcardId/review - ôn tập flashcard
 router.post('/:flashcardId/review', flashcardController.reviewFlashcard);
 
+// Cập nhật flashcard
+router.put('/:id', flashcardController.updateFlashcardControler);
+
+// Xoá flashcard
+router.delete('/:id', flashcardController.deleteFlashcardControler);
+
 module.exports = router;

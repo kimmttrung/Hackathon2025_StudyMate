@@ -56,9 +56,47 @@ async function reviewFlashcard(req, res) {
   }
 }
 
+// Cập nhật flashcard
+async function updateFlashcardControler(req, res) {
+  try {
+    const { id } = req.params;
+    const { front_text, back_text } = req.body;
+
+    if (!front_text || !back_text) {
+      return res.status(400).json({ error: "Thiếu mặt trước hoặc mặt sau" });
+    }
+
+    const updated = await flashcardModel.updateFlashcard(id, front_text, back_text);
+    res.status(200).json(updated);
+  } catch (error) {
+    console.error("Error updating flashcard:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+// Xoá flashcard
+async function deleteFlashcardControler(req, res) {
+  try {
+    const flashcardId = req.params.id;
+
+    const deletedFlashcard = await flashcardModel.deleteFlashcard(flashcardId);
+
+    if (!deletedFlashcard) {
+      return res.status(404).json({ error: 'Flashcard không tồn tại' });
+    }
+
+    res.status(200).json({ message: 'Đã xoá flashcard thành công', deleted: deletedFlashcard });
+  } catch (error) {
+    console.error('Error deleting flashcard:', error);
+    res.status(500).json({ error: 'Lỗi server khi xoá flashcard' });
+  }
+}
+
 module.exports = {
   createFlashcard,
   getFlashcardsByFolder,
   getFlashcardsByDueDate,
   reviewFlashcard,
+  updateFlashcardControler,
+  deleteFlashcardControler
 };

@@ -41,20 +41,17 @@ import {
     Trash2,
     Upload,
     FileText,
-    Brain,
     FolderOpen,
     ArrowLeft,
-    Check,
-    X,
     Sparkles,
-    File,
-    Image,
     FileUp,
     ImageIcon,
     PlusCircle,
     User,
     Bot,
     MinusCircle,
+    X,
+    Bell,
 } from "lucide-react";
 import { toast, ToastContainer } from 'react-toastify';
 import axios from "@/utils/axios.customize";
@@ -80,12 +77,18 @@ const CreateFlascard = () => {
     const [selectedIndex, setSelectedIndex] = useState(null);
     const [editFront, setEditFront] = useState("");
     const [editBack, setEditBack] = useState("");
+    const [showRecentPanel, setShowRecentPanel] = useState(false);
 
 
     const recentlyCreated = [
         { name: "Từ vựng tiếng Anh", cards: 15, type: "user", date: "Hôm nay" },
         { name: "Công thức Toán học", cards: 8, type: "ai", date: "Hôm qua" },
         { name: "Lịch sử Việt Nam", cards: 12, type: "user", date: "2 ngày trước" },
+        { name: "Idioms in English", cards: 10, type: "ai", date: "3 ngày trước" },
+        { name: "Ngữ pháp tiếng Nhật N4", cards: 20, type: "user", date: "4 ngày trước" },
+        { name: "Chủ nghĩa xã hội khoa học", cards: 18, type: "ai", date: "5 ngày trước" },
+        { name: "Kinh tế chính trị Mác – Lênin", cards: 14, type: "user", date: "6 ngày trước" },
+        { name: "Kanji thường gặp N3", cards: 25, type: "user", date: "1 tuần trước" }
     ];
     const uploadTemplates = [
         {
@@ -155,7 +158,7 @@ const CreateFlascard = () => {
             toast.error("Tên thư mục không hợp lệ");
             return;
         }
-        console.log(">>> check folder", folder);
+        // console.log(">>> check folder", folder);
         try {
             const res = await axios.put(`/api/folders/${folder.id}`, {
                 name: folder.name.trim(),
@@ -260,18 +263,48 @@ const CreateFlascard = () => {
     };
 
     const handleEditFlashcard = (index) => {
-        toast.info(`📝 Bạn đã nhấn Edit cho thẻ #${index}`, {
-            position: "top-center",
-            autoClose: 2000
-        })
-    }
+        const card = flashcards[index];
+        setEditFront(card.front_text);
+        setEditBack(card.back_text);
+        setSelectedIndex(index);
+        setDialogMode("edit");
+        setDialogOpen(true);
+    };
 
     const handleDeleteFlashcard = (index) => {
-        toast.warn(`🗑️ Bạn đã nhấn Xóa thẻ #${index}`, {
-            position: "top-center",
-            autoClose: 2000
-        })
-    }
+        setSelectedIndex(index);
+        setDialogMode("delete");
+        setDialogOpen(true);
+    };
+
+    const handleConfirmEdit = async () => {
+        try {
+            const id = flashcards[selectedIndex]?.id;
+            if (!id) return toast.error("Không tìm thấy ID thẻ để cập nhật");
+
+            const res = await axios.put(`/api/flashcards/${id}`, {
+                front_text: editFront,
+                back_text: editBack,
+            });
+            // Cập nhật lại danh sách flashcards 
+            fetchFlashcards();
+            toast.success(`Cập nhật thành công thẻ ${selectedIndex + 1}`);
+            setDialogOpen(false);
+        } catch (error) {
+            console.error("Lỗi cập nhật flashcard:", error);
+            toast.error("Cập nhật thất bại");
+        }
+    };
+
+    // Gọi API delete
+    const handleConfirmDelete = async () => {
+        const id = flashcards[selectedIndex]?.id;
+        if (!id) return toast.error("Không tìm thấy ID thẻ để xóa");
+
+        await axios.delete(`/api/flashcards/${id}`);
+        toast.success(`🗑️ Đã xoá thẻ ${selectedIndex}`);
+        setDialogOpen(false);
+    };
 
     const fetchFlashcards = async () => {
         if (!selectedFolder?.id) return;
@@ -313,7 +346,6 @@ const CreateFlascard = () => {
 
 
     if (selectedFolder) {
-        // console.log(">>>>check selectedFolder", selectedFolder);
         return (
             <Layout >
                 <div className="text-left">
@@ -341,7 +373,7 @@ const CreateFlascard = () => {
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Main Creation Area */}
-                        <div className="lg:col-span-2">
+                        <div className="lg:col-span-3">
                             <Tabs defaultValue="manual" className="space-y-6">
                                 <TabsList className="grid w-full grid-cols-2">
                                     <TabsTrigger value="manual" className="flex items-center gap-2">
@@ -426,40 +458,6 @@ const CreateFlascard = () => {
                                             </div>
                                         </CardContent>
                                     </Card>
-                                    {/* Xem flashcard */}
-                                    <Card>
-                                        <CardContent className="p-6">
-                                            <div className="overflow-x-auto">
-                                                <table className="min-w-full text-sm text-left border border-gray-200 rounded-lg">
-                                                    <thead className="bg-gray-100">
-                                                        <tr>
-                                                            <th className="px-4 py-2">ID</th>
-                                                            <th className="px-4 py-2">Mặt trước</th>
-                                                            <th className="px-4 py-2">Mặt sau</th>
-                                                            <th className="px-4 py-2">Ngày tạo</th>
-                                                            <th className="px-4 py-2 text-center">Hành động</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {flashcards.map((card, index) => (
-                                                            <tr key={index} className="border-t">
-                                                                <td className="px-4 py-2">{index + 1}</td>
-                                                                <td className="px-4 py-2">{card.front_text}</td>
-                                                                <td className="px-4 py-2">{card.back_text}</td>
-                                                                <td className="px-4 py-2">{new Date(card.created_at).toLocaleDateString("vi-VN")}</td>
-                                                                <td className="px-4 py-2 flex gap-2 justify-center">
-                                                                    <Button variant="outline" onClick={() => handleEditFlashcard(index)}>Edit</Button>
-                                                                    <Button variant="destructive" onClick={() => handleDeleteFlashcard(index)}>Xóa</Button>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            <ToastContainer />
-                                        </CardContent>
-                                    </Card>
-
                                 </TabsContent>
 
                                 {/* AI Creation */}
@@ -574,29 +572,41 @@ const CreateFlascard = () => {
                                         </>
                                     )}
                                 </TabsContent>
-
                             </Tabs>
                         </div>
+                        {/* Thông báo */}
+                        <Button
+                            className="fixed top-1/2 right-10 z-50 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700"
+                            onClick={() => setShowRecentPanel(true)}
+                        >
+                            <Bell className="w-5 h-5" />
+                        </Button>
+                        {showRecentPanel && (
+                            <div className="fixed top-1/2 right-4 transform -translate-y-1/2 
+                  w-[360px] bg-white border border-gray-300 rounded-xl 
+                  shadow-xl z-50 p-6 overflow-y-auto transition-all 
+                  animate-fade-in hide-scrollbar">
+                                {/* Header */}
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-lg font-semibold">📂 Gần đây</h2>
+                                    <Button variant="ghost" size="icon" onClick={() => setShowRecentPanel(false)}>
+                                        <X className="w-5 h-5" />
+                                    </Button>
+                                </div>
 
-                        {/* Sidebar */}
-                        <div className="space-y-6">
-                            {/* Recently Created */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">Gần đây</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    {recentlyCreated.map((item, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                                        >
-                                            <div className="flex-1">
+                                {/* Danh sách */}
+                                <div className="space-y-3 pr-1 hide-scrollbar max-h-[60vh]">
+                                    {recentlyCreated.length === 0 ? (
+                                        <p className="text-sm text-muted-foreground">Không có thẻ nào gần đây.</p>
+                                    ) : (
+                                        recentlyCreated.map((item, index) => (
+                                            <div
+                                                key={index}
+                                                className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors shadow-sm"
+                                            >
                                                 <div className="font-medium text-sm">{item.name}</div>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-xs text-muted-foreground">
-                                                        {item.cards} thẻ
-                                                    </span>
+                                                    <span className="text-xs text-muted-foreground">{item.cards} thẻ</span>
                                                     <Badge variant="secondary" className="text-xs">
                                                         {item.type === "ai" ? (
                                                             <>
@@ -611,37 +621,99 @@ const CreateFlascard = () => {
                                                         )}
                                                     </Badge>
                                                 </div>
-                                                <div className="text-xs text-muted-foreground">
-                                                    {item.date}
-                                                </div>
+                                                <div className="text-xs text-muted-foreground">{item.date}</div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </CardContent>
-                            </Card>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
-                            {/* Tips */}
-                            <Card className="bg-gradient-to-br from-create/10 to-accent/5 border-create/30">
-                                <CardHeader>
-                                    <CardTitle className="text-create-foreground">
-                                        Mẹo tạo flashcard hiệu quả
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    <div className="space-y-2">
-                                        <p className="text-sm">💡 Giữ nội dung ngắn gọn và rõ ràng</p>
-                                        <p className="text-sm">
-                                            🎯 Tập trung vào một khái niệm mỗi thẻ
-                                        </p>
-                                        <p className="text-sm">🖼️ Sử dụng hình ảnh khi có thể</p>
-                                        <p className="text-sm">
-                                            🔄 Kiểm tra và chỉnh sửa thường xuyên
-                                        </p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
+
+
                     </div>
+                    {/* Xem flashcard */}
+                    <Card>
+                        <CardContent className="p-6">
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full text-sm text-left border border-gray-200 rounded-lg">
+                                    <thead className="bg-gray-100">
+                                        <tr>
+                                            <th className="px-4 py-2">ID</th>
+                                            <th className="px-4 py-2">Mặt trước</th>
+                                            <th className="px-4 py-2">Mặt sau</th>
+                                            <th className="px-4 py-2">Ngày tạo</th>
+                                            <th className="px-4 py-2">Ngày sửa</th>
+                                            <th className="px-4 py-2 text-center">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {flashcards.map((card, index) => (
+                                            <tr key={index} className="border-t">
+                                                <td className="px-4 py-2">{index + 1}</td>
+                                                <td className="px-4 py-2">{card.front_text}</td>
+                                                <td className="px-4 py-2">{card.back_text}</td>
+                                                <td className="px-4 py-2">{new Date(card.created_at).toLocaleDateString("vi-VN")}</td>
+                                                <td className="px-4 py-2">{new Date(card.last_update).toLocaleDateString("vi-VN")}</td>
+                                                <td className="px-4 py-2 flex gap-2 justify-center">
+                                                    <Button variant="outline" onClick={() => handleEditFlashcard(index)}>Edit</Button>
+                                                    <Button variant="destructive" onClick={() => handleDeleteFlashcard(index)}>Xóa</Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+                                    <DialogContent className="max-w-md mx-auto bg-purple-100">
+                                        <DialogHeader>
+                                            <DialogTitle>
+                                                {dialogMode === "edit" ? "Chỉnh sửa Flashcard" : "Xác nhận xoá"}
+                                            </DialogTitle>
+                                        </DialogHeader>
+
+                                        {dialogMode === "edit" ? (
+                                            <>
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <label className="text-sm font-medium">Mặt trước</label>
+                                                        <Textarea
+                                                            value={editFront}
+                                                            onChange={(e) => setEditFront(e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-sm font-medium">Mặt sau</label>
+                                                        <Textarea
+                                                            value={editBack}
+                                                            onChange={(e) => setEditBack(e.target.value)}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <DialogFooter className="mt-4">
+                                                    <Button onClick={handleConfirmEdit} className="bg-purple-600 text-white">Lưu thay đổi</Button>
+                                                </DialogFooter>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <DialogDescription className="py-2">
+                                                    Bạn có chắc chắn muốn xoá thẻ {selectedIndex + 1} không?
+                                                </DialogDescription>
+                                                <DialogFooter className="mt-4 flex gap-3">
+                                                    <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                                                        Hủy
+                                                    </Button>
+                                                    <Button variant="destructive" onClick={handleConfirmDelete}>
+                                                        Xóa
+                                                    </Button>
+                                                </DialogFooter>
+                                            </>
+                                        )}
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
+                            <ToastContainer />
+                        </CardContent>
+                    </Card>
                 </div>
             </Layout>
         );
