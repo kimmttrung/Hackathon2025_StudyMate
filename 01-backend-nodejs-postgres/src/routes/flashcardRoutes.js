@@ -3,7 +3,7 @@ const router = express.Router();
 const flashcardController = require('../controllers/flashcardController');
 
 // POST /flashcards - thêm flashcard
-router.post('/', flashcardController.createFlashcard);
+router.post('/create', flashcardController.createFlashcard);
 
 // GET /flashcards/folder/:folderId - lấy theo folder
 router.get('/folder/:folderId', flashcardController.getFlashcardsByFolder);

@@ -54,8 +54,9 @@ import {
     PlusCircle,
     User,
     Bot,
+    MinusCircle,
 } from "lucide-react";
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import axios from "@/utils/axios.customize";
 import { DialogClose } from "@radix-ui/react-dialog";
 
@@ -64,30 +65,22 @@ const CreateFlascard = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [name, setName] = useState("");
     const [editingFolder, setEditingFolder] = useState(null);
-    const [uploadedContent, setUploadedContent] = useState("");
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [cards, setCards] = useState([{ front: "", back: "" }]);
+    const [cards, setCards] = useState([
+        { id: crypto.randomUUID(), front: "", back: "" }
+    ]);
     const [showUploadMode, setShowUploadMode] = useState(true);
     const [uploadedIndex, setUploadedIndex] = useState(null);
     const [uploadedFileName, setUploadedFileName] = useState("");
     const [folders, setFolders] = useState([]);
-    const [questions, setQuestions] = useState([
-        {
-            id: "1",
-            question: "Giải phương trình x² - 5x + 6 = 0",
-            answer: "x = 2 hoặc x = 3",
-            type: "open-ended",
-            difficulty: "medium",
-        },
-        {
-            id: "2",
-            question: "Đạo hàm của hàm số f(x) = x³ là gì?",
-            answer: "3x²",
-            options: ["3x²", "x²", "3x", "x³"],
-            type: "multiple-choice",
-            difficulty: "easy",
-        },
-    ]);
+    const [flashcards, setFlashcards] = useState([]);
+
+    // Flashcard
+    const [isDialogOpen, setDialogOpen] = useState(false);
+    const [dialogMode, setDialogMode] = useState("edit"); // 'edit' | 'delete'
+    const [selectedIndex, setSelectedIndex] = useState(null);
+    const [editFront, setEditFront] = useState("");
+    const [editBack, setEditBack] = useState("");
+
 
     const recentlyCreated = [
         { name: "Từ vựng tiếng Anh", cards: 15, type: "user", date: "Hôm nay" },
@@ -117,14 +110,23 @@ const CreateFlascard = () => {
 
     const fileInputsRef = useRef([]);
 
-    const handleChange = (index, field, value) => {
-        const updatedCards = [...cards];
-        updatedCards[index][field] = value;
-        setCards(updatedCards);
+    const handleAddCardInput = () => {
+        setCards((prev) => [
+            ...prev,
+            { id: crypto.randomUUID(), front: "", back: "" }
+        ]);
     };
 
-    const handleAddCardInput = () => {
-        setCards([...cards, { front: "", back: "" }]);
+    const handleRemoveCardInput = () => {
+        setCards((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+    };
+
+    const handleChange = (index, field, value) => {
+        setCards((prev) => {
+            const updated = [...prev];
+            updated[index][field] = value;
+            return updated;
+        });
     };
 
     const filteredFolders = folders.filter((folder) =>
@@ -179,34 +181,33 @@ const CreateFlascard = () => {
         }
     };
 
-    const handleGenerateQuestions = async () => {
-        if (!uploadedContent.trim()) return;
+    //     if (!uploadedContent.trim()) return;
+    //     setIsGenerating(true);
+    //     // Simulate AI generation
+    //     setTimeout(() => {
+    //         const newQuestions = [
+    //             {
+    //                 id: Date.now().toString(),
+    //                 question: "Câu hỏi mới được tạo từ nội dung đã upload",
+    //                 answer: "Đáp án được AI tạo ra",
+    //                 type: "open-ended",
+    //                 difficulty: "medium",
+    //             },
+    //             {
+    //                 id: (Date.now() + 1).toString(),
+    //                 question: "Câu hỏi trắc nghiệm từ tài liệu",
+    //                 answer: "Đáp án A",
+    //                 options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
+    //                 type: "multiple-choice",
+    //                 difficulty: "easy",
+    //             },
+    //         ];
+    //         setQuestions([...questions, ...newQuestions]);
+    //         setUploadedContent("");
+    //         setIsGenerating(false);
+    //     }, 2000);
+    // };
 
-        setIsGenerating(true);
-        // Simulate AI generation
-        setTimeout(() => {
-            const newQuestions = [
-                {
-                    id: Date.now().toString(),
-                    question: "Câu hỏi mới được tạo từ nội dung đã upload",
-                    answer: "Đáp án được AI tạo ra",
-                    type: "open-ended",
-                    difficulty: "medium",
-                },
-                {
-                    id: (Date.now() + 1).toString(),
-                    question: "Câu hỏi trắc nghiệm từ tài liệu",
-                    answer: "Đáp án A",
-                    options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
-                    type: "multiple-choice",
-                    difficulty: "easy",
-                },
-            ];
-            setQuestions([...questions, ...newQuestions]);
-            setUploadedContent("");
-            setIsGenerating(false);
-        }, 2000);
-    };
 
     // Hàm lấy user_id từ token
     const getUserIdFromToken = () => {
@@ -238,11 +239,81 @@ const CreateFlascard = () => {
         }
     }
 
+    const handleSaveFlashcards = async () => {
+        try {
+            for (const card of cards) {
+                if (!card.front.trim() && !card.back.trim()) continue;
+
+                await axios.post("/api/flashcards/create", {
+                    folder_id: selectedFolder?.id, // hoặc truyền folderId khác nếu có
+                    front_text: card.front,
+                    back_text: card.back,
+                });
+            }
+            fetchFlashcards();
+            toast.success("Đã lưu các flashcard thành công!");
+            setCards([{ id: crypto.randomUUID(), front: "", back: "" }]); // reset
+        } catch (error) {
+            console.error("Error inserting flashcard:", error);
+            toast.error("Lỗi khi thêm flashcard");
+        }
+    };
+
+    const handleEditFlashcard = (index) => {
+        toast.info(`📝 Bạn đã nhấn Edit cho thẻ #${index}`, {
+            position: "top-center",
+            autoClose: 2000
+        })
+    }
+
+    const handleDeleteFlashcard = (index) => {
+        toast.warn(`🗑️ Bạn đã nhấn Xóa thẻ #${index}`, {
+            position: "top-center",
+            autoClose: 2000
+        })
+    }
+
+    const fetchFlashcards = async () => {
+        if (!selectedFolder?.id) return;
+        try {
+            const res = await axios.get(`/api/flashcards/folder/${selectedFolder.id}`);
+            // console.log(">>> check flashcards", res);
+            setFlashcards(res);
+        } catch (error) {
+            toast.error("Lỗi khi lấy flashcard");
+            console.error(error);
+        }
+    };
+
+
     useEffect(() => {
-        fetchFolders();
+        const fetchData = async () => {
+            await fetchFolders();
+        };
+
+        fetchData();
     }, []);
 
+
+
+    useEffect(() => {
+        const fetchFlashcards = async () => {
+            if (!selectedFolder?.id) return;
+            try {
+                const res = await axios.get(`/api/flashcards/folder/${selectedFolder.id}`);
+                // console.log(">>> check flashcards", res);
+                setFlashcards(res);
+            } catch (error) {
+                toast.error("Lỗi khi lấy flashcard");
+                console.error(error);
+            }
+        };
+        fetchFlashcards();
+    }, [selectedFolder]);
+
+
     if (selectedFolder) {
+        // console.log(">>>>check selectedFolder", selectedFolder);
         return (
             <Layout >
                 <div className="text-left">
@@ -302,7 +373,7 @@ const CreateFlascard = () => {
                                                 <Card className="border-dashed border-2 border-create/30">
                                                     <CardContent className="p-4 space-y-4">
                                                         {cards.map((card, index) => (
-                                                            <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div key={card.id} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                                 <div className="space-y-2">
                                                                     <label className="text-sm font-medium">Mặt trước</label>
                                                                     <Textarea
@@ -324,28 +395,71 @@ const CreateFlascard = () => {
                                                             </div>
                                                         ))}
 
+                                                        <div className="flex gap-4">
+                                                            <Button
+                                                                variant="outline"
+                                                                className="w-full border-create text-create-foreground hover:bg-create/10"
+                                                                onClick={handleAddCardInput}
+                                                            >
+                                                                <PlusCircle className="w-4 h-4 mr-2" />
+                                                                Thêm thẻ mới
+                                                            </Button>
+
+                                                            <Button
+                                                                variant="outline"
+                                                                className="w-full border-destructive text-red-600 hover:bg-red-50"
+                                                                onClick={handleRemoveCardInput}
+                                                            >
+                                                                <MinusCircle className="w-4 h-4 mr-2" />
+                                                                Giảm thẻ
+                                                            </Button>
+                                                        </div>
+
                                                         <Button
-                                                            variant="outline"
-                                                            className="w-full border-create text-create-foreground hover:bg-create/10"
-                                                            onClick={handleAddCardInput}
+                                                            className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                                                            onClick={handleSaveFlashcards}
                                                         >
-                                                            <PlusCircle className="w-4 h-4 mr-2" />
-                                                            Thêm thẻ mới
+                                                            Lưu tất cả thẻ
                                                         </Button>
                                                     </CardContent>
                                                 </Card>
-
                                             </div>
-
-                                            <Button
-                                                className="w-full bg-create hover:bg-create/90 text-create-foreground"
-                                            // onClick={handleAddCard}
-                                            >
-                                                Tạo bộ flashcard
-                                            </Button>
-
                                         </CardContent>
                                     </Card>
+                                    {/* Xem flashcard */}
+                                    <Card>
+                                        <CardContent className="p-6">
+                                            <div className="overflow-x-auto">
+                                                <table className="min-w-full text-sm text-left border border-gray-200 rounded-lg">
+                                                    <thead className="bg-gray-100">
+                                                        <tr>
+                                                            <th className="px-4 py-2">ID</th>
+                                                            <th className="px-4 py-2">Mặt trước</th>
+                                                            <th className="px-4 py-2">Mặt sau</th>
+                                                            <th className="px-4 py-2">Ngày tạo</th>
+                                                            <th className="px-4 py-2 text-center">Hành động</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {flashcards.map((card, index) => (
+                                                            <tr key={index} className="border-t">
+                                                                <td className="px-4 py-2">{index + 1}</td>
+                                                                <td className="px-4 py-2">{card.front_text}</td>
+                                                                <td className="px-4 py-2">{card.back_text}</td>
+                                                                <td className="px-4 py-2">{new Date(card.created_at).toLocaleDateString("vi-VN")}</td>
+                                                                <td className="px-4 py-2 flex gap-2 justify-center">
+                                                                    <Button variant="outline" onClick={() => handleEditFlashcard(index)}>Edit</Button>
+                                                                    <Button variant="destructive" onClick={() => handleDeleteFlashcard(index)}>Xóa</Button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <ToastContainer />
+                                        </CardContent>
+                                    </Card>
+
                                 </TabsContent>
 
                                 {/* AI Creation */}
@@ -376,7 +490,7 @@ const CreateFlascard = () => {
                                                             const IconComponent = template.icon;
                                                             return (
                                                                 <Card
-                                                                    key={template.name}
+                                                                    key={index}
                                                                     className="cursor-pointer transition-all duration-300 hover:scale-102 hover:shadow-md border-2 hover:border-create/50"
                                                                     onClick={() => {
                                                                         if (uploadedFileName) {
@@ -602,9 +716,9 @@ const CreateFlascard = () => {
 
                 {/* Folders Grid */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredFolders.map((folder) => (
+                    {filteredFolders.map((folder, index) => (
                         <Card
-                            key={folders.id}
+                            key={index}
                             className="hover:shadow-lg transition-all duration-300 cursor-pointer group"
                         >
                             <CardHeader className="pb-4">
