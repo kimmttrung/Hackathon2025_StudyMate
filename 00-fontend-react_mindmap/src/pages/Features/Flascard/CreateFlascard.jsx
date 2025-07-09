@@ -78,7 +78,8 @@ const CreateFlascard = () => {
     const [editFront, setEditFront] = useState("");
     const [editBack, setEditBack] = useState("");
     const [showRecentPanel, setShowRecentPanel] = useState(false);
-
+    const [generatedFlashcards, setGeneratedFlashcards] = useState([]);
+    const [cardCount, setCardCount] = useState(5); // mặc định 5 thẻ
 
     const recentlyCreated = [
         { name: "Từ vựng tiếng Anh", cards: 15, type: "user", date: "Hôm nay" },
@@ -110,6 +111,22 @@ const CreateFlascard = () => {
             accept: "image/*",
         },
     ];
+
+    const handleUploadAndGenerate = async () => {
+        const file = document.getElementById(`file-${uploadedIndex}`).files[0];
+        console.log(">>>check file", file);
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("cardCount", cardCount); // mặc định là số bạn nhập từ input
+
+
+        const res = await axios.post("/api/ai/upload", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+        console.log("check res file", res);
+        setGeneratedFlashcards(res); // nếu bạn hiển thị ra
+    };
+
 
     const fileInputsRef = useRef([]);
 
@@ -237,7 +254,7 @@ const CreateFlascard = () => {
                 console.log(">>>check res", res);
                 setFolders(res); // gán dữ liệu vào state
             } catch (error) {
-                toast.error("Lỗi khi lấy danh sách thư mục:", err);
+                toast.error("Lỗi khi lấy danh sách thư mục:", error);
             }
         }
     }
@@ -533,14 +550,42 @@ const CreateFlascard = () => {
                                                             );
                                                         })}
                                                     </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <label htmlFor="card-count" className="text-sm font-medium">Số lượng flashcard:</label>
+                                                        <input
+                                                            id="card-count"
+                                                            type="number"
+                                                            value={cardCount}
+                                                            onChange={(e) => setCardCount(Number(e.target.value))}
+                                                            min={1}
+                                                            max={20}
+                                                            className="border p-2 rounded w-20 text-center"
+                                                        />
+                                                    </div>
 
                                                     {/* Nút Tạo bằng AI */}
                                                     <div className="flex justify-center">
-                                                        <Button className="mt-4 px-6 py-2 bg-gradient-to-r from-create to-accent text-white rounded-xl shadow-lg">
+                                                        <Button
+                                                            className="mt-4 px-6 py-2 bg-gradient-to-r from-create to-accent text-white rounded-xl shadow-lg"
+                                                            onClick={handleUploadAndGenerate}
+                                                        >
                                                             <Sparkles className="w-4 h-4 mr-2" />
                                                             Tạo bằng AI
                                                         </Button>
                                                     </div>
+                                                    {Array.isArray(generatedFlashcards) && generatedFlashcards.length > 0 && (
+                                                        <div className="space-y-4 mt-6">
+                                                            <h3 className="text-lg font-semibold">🔍 Kết quả Flashcards:</h3>
+                                                            {generatedFlashcards.map((card, index) => (
+                                                                <div key={index} className="border p-4 rounded-lg bg-purple-50">
+                                                                    <p><strong>Mặt trước:</strong> {card.front}</p>
+                                                                    <p><strong>Mặt sau:</strong> {card.back}</p>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+
                                                 </CardContent>
                                             </Card>
 
