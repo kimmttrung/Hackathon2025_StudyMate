@@ -1,10 +1,10 @@
 require("dotenv").config();
 const axios = require("axios");
 
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-exports.generateFlashcardsWithGemini = async (text, cardCount = 5) => {
+exports.generateFlashcardsWithGemini = async (text, cardCount = 3) => {
     const prompt = `
 Hãy đọc đoạn văn sau và tạo ra flashcards ngắn gọn bằng tiếng Việt. Mỗi flashcard có 2 trường: "front" và "back".
 Yêu cầu:

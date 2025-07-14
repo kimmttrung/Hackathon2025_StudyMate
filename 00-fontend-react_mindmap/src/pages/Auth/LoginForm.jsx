@@ -9,7 +9,6 @@ const LoginForm = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    // const [rememberMe, setRememberMe] = useState(false);
     const navigate = useNavigate();
 
     const togglePasswordView = () => setShowPassword(!showPassword);
@@ -61,7 +60,12 @@ const LoginForm = () => {
     };
 
     return (
-        <div className="w-full flex flex-col gap-6">
+        <form
+            onSubmit={(e) => {
+                e.preventDefault(); // Ngăn reload lại trang
+                handleSubmitLogin(); // Gọi hàm xử lý login
+            }}
+            className="w-full flex flex-col gap-6">
             <div className="w-full flex items-center gap-2 bg-white p-2 rounded-xl">
                 <input
                     type="email"
@@ -93,28 +97,9 @@ const LoginForm = () => {
                 )}
             </div>
 
-            <div className="flex justify-between items-center text-sm text-gray-600">
-                <label className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        // checked={rememberMe}
-                        // onChange={(e) => setRememberMe(e.target.checked)}
-                        className="w-4 h-4"
-                    />
-                    Ghi nhớ đăng nhập
-                </label>
-                <span
-                    // onClick={() => navigate("/forgot-password")}
-                    className="cursor-pointer text-indigo-500"
-                >
-                    Quên mật khẩu?
-                </span>
-            </div>
-
             <button
                 type="submit"
                 className="w-full p-3 bg-[#71da90] rounded-xl mt-2 hover:bg-[#0FC446] text-base md:text-sm text-white font-bold"
-                onClick={handleSubmitLogin}
             >
                 Đăng nhập
             </button>
@@ -140,7 +125,7 @@ const LoginForm = () => {
                     Đăng ký ngay
                 </span>
             </div>
-        </div>
+        </form>
     );
 };
 

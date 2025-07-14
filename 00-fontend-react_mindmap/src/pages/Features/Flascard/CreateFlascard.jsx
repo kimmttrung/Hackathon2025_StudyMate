@@ -52,6 +52,7 @@ import {
     MinusCircle,
     X,
     Bell,
+    Loader2,
 } from "lucide-react";
 import { toast, ToastContainer } from 'react-toastify';
 import axios from "@/utils/axios.customize";
@@ -80,6 +81,7 @@ const CreateFlascard = () => {
     const [showRecentPanel, setShowRecentPanel] = useState(false);
     const [generatedFlashcards, setGeneratedFlashcards] = useState([]);
     const [cardCount, setCardCount] = useState(5); // mặc định 5 thẻ
+    const [loading, setLoading] = useState(false);
 
     const recentlyCreated = [
         { name: "Từ vựng tiếng Anh", cards: 15, type: "user", date: "Hôm nay" },
@@ -113,6 +115,7 @@ const CreateFlascard = () => {
     ];
 
     const handleUploadAndGenerate = async () => {
+        setLoading(true);
         const file = document.getElementById(`file-${uploadedIndex}`).files[0];
         console.log(">>>check file", file);
         const formData = new FormData();
@@ -125,9 +128,9 @@ const CreateFlascard = () => {
         });
         console.log("check res file", res);
         setGeneratedFlashcards(res); // nếu bạn hiển thị ra
+        setUploadedFileName("");               // Xóa tên file đã chọn
+        setUploadedIndex(null);                // Reset chỉ mục upload
     };
-
-
     const fileInputsRef = useRef([]);
 
     const handleAddCardInput = () => {
@@ -573,6 +576,14 @@ const CreateFlascard = () => {
                                                             Tạo bằng AI
                                                         </Button>
                                                     </div>
+                                                    {loading && (
+                                                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+                                                            <div className="flex flex-col items-center gap-4 text-white">
+                                                                <Loader2 className="w-10 h-10 animate-spin text-white" />
+                                                                <p className="text-lg font-medium animate-pulse">Đang xử lý, vui lòng chờ...</p>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                     {Array.isArray(generatedFlashcards) && generatedFlashcards.length > 0 && (
                                                         <div className="space-y-4 mt-6">
                                                             <h3 className="text-lg font-semibold">🔍 Kết quả Flashcards:</h3>

@@ -16,6 +16,11 @@
   "author": "Mai Trung",
   "license": "ISC",
   "dependencies": {
+    "@azure/cognitiveservices-computervision": "^8.2.0",
+    "@azure/core-auth": "^1.10.0",
+    "@azure/identity": "^4.10.2",
+    "@azure/ms-rest-js": "^2.7.0",
+    "axios": "^1.10.0",
     "backend-nodejs-postgresql": "file:",
     "bcrypt": "^6.0.0",
     "cohere-ai": "^7.17.1",
@@ -26,7 +31,10 @@
     "jsonwebtoken": "^9.0.2",
     "mammoth": "^1.9.1",
     "multer": "^2.0.1",
+    "openai": "^5.8.3",
+    "pdf-img-convert": "^2.0.0",
     "pdf-parse": "^1.1.1",
+    "pdf-poppler": "^0.2.1",
     "pg": "^8.16.2",
     "tesseract.js": "^6.0.1"
   },
