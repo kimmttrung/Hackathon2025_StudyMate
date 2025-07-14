@@ -126,7 +126,7 @@ const CreateFlascard = () => {
         const res = await axios.post("/api/ai/upload", formData, {
             headers: { "Content-Type": "multipart/form-data" },
         });
-        console.log("check res file", res);
+        // console.log("check res file", res);
         setGeneratedFlashcards(res); // nếu bạn hiển thị ra
         setUploadedFileName("");               // Xóa tên file đã chọn
         setUploadedIndex(null);                // Reset chỉ mục upload
@@ -254,7 +254,6 @@ const CreateFlascard = () => {
         } else {
             try {
                 const res = await axios.get(`/api/folders/${user_id}`)
-                console.log(">>>check res", res);
                 setFolders(res); // gán dữ liệu vào state
             } catch (error) {
                 toast.error("Lỗi khi lấy danh sách thư mục:", error);
@@ -322,6 +321,7 @@ const CreateFlascard = () => {
         if (!id) return toast.error("Không tìm thấy ID thẻ để xóa");
 
         await axios.delete(`/api/flashcards/${id}`);
+        fetchFlashcards();
         toast.success(`🗑️ Đã xoá thẻ ${selectedIndex}`);
         setDialogOpen(false);
     };
@@ -860,7 +860,7 @@ const CreateFlascard = () => {
                                                 {folder.name}
                                             </CardTitle>
                                             <CardDescription>
-                                                {folder.flashcardCount} flashcard •{" "}
+                                                {folder.flascardcount} flashcard •{" "}
                                                 {new Date(folder.created_at).toLocaleDateString("vi-VN")}
                                             </CardDescription>
                                         </div>
@@ -970,7 +970,7 @@ const CreateFlascard = () => {
                                         variant="secondary"
                                         className="bg-blue-50 text-blue-700"
                                     >
-                                        {folder.flashcardCount} câu hỏi
+                                        {folder.flascardcount} câu hỏi
                                     </Badge>
                                     <Button
                                         variant="ghost"

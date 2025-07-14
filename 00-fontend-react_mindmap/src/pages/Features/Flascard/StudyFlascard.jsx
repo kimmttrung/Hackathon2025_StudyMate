@@ -2,17 +2,24 @@
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import { Folder, BookOpen, Clock, Star, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { toast, ToastContainer } from 'react-toastify';
+import axios from "@/utils/axios.customize";
 
 const StudyFlashcard = () => {
     const [selectedFolder, setSelectedFolder] = useState(null);
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
     const [searchTerm, setSearchTerm] = useState("");
     const [showBack, setShowBack] = useState(false);
-    const [cardTags, setCardTags] = useState({}); // { "folderId_cardIndex": { review: true, favorite: true, wrong: false } }
+    const [folders, setFolders] = useState([]);
+    const folderCount = folders?.length || 0;
+
+    const totalFlashcards = folders?.reduce
+        ? folders.reduce((sum, f) => sum + (parseInt(f.flascardcount) || 0), 0)
+        : 0;
     const handlePrevCard = () => {
         setShowBack(false);
         if (currentCardIndex > 0) {
@@ -22,7 +29,6 @@ const StudyFlashcard = () => {
 
     const currentFolder = selectedFolder;
     const currentCard = currentFolder?.cards?.[currentCardIndex];
-    const cardKey = `${selectedFolder?.id}_${currentCardIndex}`;
 
     const handleNextCard = () => {
         setShowBack(false);
@@ -35,94 +41,134 @@ const StudyFlashcard = () => {
         }
     };
 
-    const folders = [
-        {
-            id: 1,
-            name: "Tiếng Anh Cơ Bản",
-            progress: 78,
-            lastStudied: "2 giờ trước",
-            difficulty: "Dễ",
-            color: "bg-blue-100 text-blue-800",
-            cards: [
-                { front: "Hello", back: "Xin chào" },
-                { front: "Thank you", back: "Cảm ơn" },
-                { front: "Goodbye", back: "Tạm biệt" },
-                { front: "Apple", back: "Quả táo" },
-            ],
-        },
-        {
-            id: 2,
-            name: "Từ Vựng Toeic",
-            progress: 35,
-            lastStudied: "1 ngày trước",
-            difficulty: "Trung bình",
-            color: "bg-yellow-100 text-yellow-800",
-            cards: [
-                { front: "Revenue", back: "Doanh thu" },
-                { front: "Employee", back: "Nhân viên" },
-                { front: "Meeting", back: "Cuộc họp" },
-                { front: "Project", back: "Dự án" },
-            ],
-        },
-        {
-            id: 3,
-            name: "Từ Vựng IELTS",
-            progress: 12,
-            lastStudied: "5 ngày trước",
-            difficulty: "Khó",
-            color: "bg-red-100 text-red-800",
-            cards: [
-                { front: "Analyze", back: "Phân tích" },
-                { front: "Evaluate", back: "Đánh giá" },
-                { front: "Summarize", back: "Tóm tắt" },
-                { front: "Contrast", back: "Tương phản" },
-            ],
-        },
-        {
-            id: 4,
-            name: "Ngữ Pháp Cơ Bản",
-            progress: 60,
-            lastStudied: "3 giờ trước",
-            difficulty: "Trung bình",
-            color: "bg-green-100 text-green-800",
-            cards: [
-                { front: "Present Simple", back: "Thì hiện tại đơn" },
-                { front: "Past Perfect", back: "Thì quá khứ hoàn thành" },
-                { front: "Passive Voice", back: "Câu bị động" },
-                { front: "Conditional", back: "Câu điều kiện" },
-            ],
-        },
-        {
-            id: 5,
-            name: "Giao Tiếp Hằng Ngày",
-            progress: 45,
-            lastStudied: "6 ngày trước",
-            difficulty: "Dễ",
-            color: "bg-indigo-100 text-indigo-800",
-            cards: [
-                { front: "How are you?", back: "Bạn khỏe không?" },
-                { front: "Nice to meet you", back: "Rất vui được gặp bạn" },
-                { front: "Where are you from?", back: "Bạn đến từ đâu?" },
-                { front: "See you later", back: "Hẹn gặp lại" },
-            ],
-        },
-    ];
+    // const folders = [
+    //     {
+    //         id: 1,
+    //         name: "Tiếng Anh Cơ Bản",
+    //         progress: 78,
+    //         lastStudied: "2 giờ trước",
+    //         difficulty: "Dễ",
+    //         color: "bg-blue-100 text-blue-800",
+    //         cards: [
+    //             { front: "Hello", back: "Xin chào" },
+    //             { front: "Thank you", back: "Cảm ơn" },
+    //             { front: "Goodbye", back: "Tạm biệt" },
+    //             { front: "Apple", back: "Quả táo" },
+    //         ],
+    //     },
+    //     {
+    //         id: 2,
+    //         name: "Từ Vựng Toeic",
+    //         progress: 35,
+    //         lastStudied: "1 ngày trước",
+    //         difficulty: "Trung bình",
+    //         color: "bg-yellow-100 text-yellow-800",
+    //         cards: [
+    //             { front: "Revenue", back: "Doanh thu" },
+    //             { front: "Employee", back: "Nhân viên" },
+    //             { front: "Meeting", back: "Cuộc họp" },
+    //             { front: "Project", back: "Dự án" },
+    //         ],
+    //     },
+    //     {
+    //         id: 3,
+    //         name: "Từ Vựng IELTS",
+    //         progress: 12,
+    //         lastStudied: "5 ngày trước",
+    //         difficulty: "Khó",
+    //         color: "bg-red-100 text-red-800",
+    //         cards: [
+    //             { front: "Analyze", back: "Phân tích" },
+    //             { front: "Evaluate", back: "Đánh giá" },
+    //             { front: "Summarize", back: "Tóm tắt" },
+    //             { front: "Contrast", back: "Tương phản" },
+    //         ],
+    //     },
+    //     {
+    //         id: 4,
+    //         name: "Ngữ Pháp Cơ Bản",
+    //         progress: 60,
+    //         lastStudied: "3 giờ trước",
+    //         difficulty: "Trung bình",
+    //         color: "bg-green-100 text-green-800",
+    //         cards: [
+    //             { front: "Present Simple", back: "Thì hiện tại đơn" },
+    //             { front: "Past Perfect", back: "Thì quá khứ hoàn thành" },
+    //             { front: "Passive Voice", back: "Câu bị động" },
+    //             { front: "Conditional", back: "Câu điều kiện" },
+    //         ],
+    //     },
+    //     {
+    //         id: 5,
+    //         name: "Giao Tiếp Hằng Ngày",
+    //         progress: 45,
+    //         lastStudied: "6 ngày trước",
+    //         difficulty: "Dễ",
+    //         color: "bg-indigo-100 text-indigo-800",
+    //         cards: [
+    //             { front: "How are you?", back: "Bạn khỏe không?" },
+    //             { front: "Nice to meet you", back: "Rất vui được gặp bạn" },
+    //             { front: "Where are you from?", back: "Bạn đến từ đâu?" },
+    //             { front: "See you later", back: "Hẹn gặp lại" },
+    //         ],
+    //     },
+    // ];
 
-
-
-    const toggleTag = (type) => {
-        setCardTags((prev) => ({
-            ...prev,
-            [cardKey]: {
-                ...prev[cardKey],
-                [type]: !prev[cardKey]?.[type],
-            },
-        }));
+    // ✨ Lấy dữ liệu folder từ API
+    const fetchFolderDetails = async (folderId) => {
+        try {
+            const res = await axios.get(`/api/folders/${folderId}/details`);
+            // console.log(">>>check res", res);
+            setSelectedFolder(res);
+            setCurrentCardIndex(0);
+            setShowBack(false);
+        } catch (err) {
+            console.error("Lỗi khi tải folder:", err);
+        }
     };
+
 
     const filteredFolders = folders.filter((folder) =>
         folder.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const getUserIdFromToken = () => {
+        const access_token = localStorage.getItem("access_token");
+        const payloadBase64 = access_token.split('.')[1];
+        const payload = JSON.parse(atob(payloadBase64));
+        if (!payload) return null;
+
+        try {
+            return payload.id; // hoặc decoded.user_id tùy backend
+        } catch (err) {
+            console.error("Token invalid:", err);
+            return null;
+        }
+    };
+
+    const fetchFolders = async () => {
+        const user_id = getUserIdFromToken();
+        if (!user_id) {
+            return;
+        } else {
+            try {
+                const res = await axios.get(`/api/folders/${user_id}`)
+                // console.log(">>>check res", res);
+                setFolders(res); // gán dữ liệu vào state
+            } catch (error) {
+                toast.error("Lỗi khi lấy danh sách thư mục:", error);
+            }
+        }
+    }
+
+    useEffect(() => {
+        const fetchData = async () => {
+            await fetchFolders();
+        };
+
+        fetchData();
+    }, []);
+
 
     return (
         <Layout title="Học Phần">
@@ -144,13 +190,15 @@ const StudyFlashcard = () => {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <Card>
                                 <CardContent className="p-4 text-center">
-                                    <div className="text-2xl font-bold text-primary">5</div>
+                                    <div className="text-2xl font-bold text-primary">{folderCount}</div>
                                     <div className="text-sm text-muted-foreground">Thư mục</div>
                                 </CardContent>
                             </Card>
                             <Card>
                                 <CardContent className="p-4 text-center">
-                                    <div className="text-2xl font-bold text-accent">161</div>
+                                    <div className="text-2xl font-bold text-accent">
+                                        {totalFlashcards}
+                                    </div>
                                     <div className="text-sm text-muted-foreground">
                                         Tổng flashcard
                                     </div>
@@ -186,9 +234,6 @@ const StudyFlashcard = () => {
                                             <div>
                                                 <CardTitle className="text-lg">{folder.name}</CardTitle>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <Badge variant="secondary" className={folder.color}>
-                                                        {folder.difficulty}
-                                                    </Badge>
                                                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                                         <Star className="w-3 h-3" />
                                                         <span>{folder.progress}%</span>
@@ -201,24 +246,25 @@ const StudyFlashcard = () => {
                                         <div className="w-full bg-secondary rounded-full h-2">
                                             <div
                                                 className="bg-study h-2 rounded-full"
-                                                style={{ width: `${folder.progress}%` }}
+                                            // style={{ width: `${folder.progress}%` }}
                                             />
                                         </div>
                                         <div className="flex justify-between text-sm text-muted-foreground">
                                             <div className="flex items-center gap-1">
-                                                <BookOpen className="w-4 h-4" /> {folder.cards.length} thẻ
+                                                <BookOpen className="w-4 h-4" /> {folder.flascardcount} thẻ
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <Clock className="w-4 h-4" /> {folder.lastStudied}
+                                                <Clock className="w-4 h-4" /> {new Date(folder.created_at).toLocaleDateString("vi-VN")}
                                             </div>
                                         </div>
                                         <Button
                                             className="w-full bg-study hover:bg-study/90 text-white"
-                                            onClick={() => setSelectedFolder(folder)}
+                                            onClick={() => fetchFolderDetails(folder.id)}
                                         >
                                             🚀 Bắt đầu học
                                         </Button>
                                     </CardContent>
+
                                 </Card>
                             ))}
                         </div>
@@ -265,7 +311,6 @@ const StudyFlashcard = () => {
                             </div>
 
                             {/* Nút chuyển trái phải */}
-                            {/* Nút chuyển trái/phải với icon đẹp */}
                             <div className="flex justify-center items-center gap-6">
                                 <Button
                                     variant="ghost"

@@ -45,9 +45,42 @@ async function updateFolderName(id, name) {
   return result.rows[0];
 }
 
+async function updateFlashcardCount(folderId) {
+  const countQuery = `
+    SELECT COUNT(*) FROM Flashcards WHERE folder_id = $1
+  `;
+  const updateQuery = `
+    UPDATE Folders SET flascardcount = $1 WHERE id = $2
+  `;
+
+  // Đếm số flashcard hiện có
+  const countResult = await client.query(countQuery, [folderId]);
+  const count = parseInt(countResult.rows[0].count, 10);
+
+  // Cập nhật lại bảng Folders
+  await client.query(updateQuery, [count, folderId]);
+}
+
+async function getFolderWithCards(folderId) {
+  const folderQuery = `SELECT * FROM Folders WHERE id = $1`;
+  const cardQuery = `SELECT id, front_text AS front, back_text AS back FROM Flashcards WHERE folder_id = $1`;
+
+  const folderResult = await client.query(folderQuery, [folderId]);
+  if (folderResult.rowCount === 0) return null;
+
+  const cardResult = await client.query(cardQuery, [folderId]);
+
+  const folder = folderResult.rows[0];
+  folder.cards = cardResult.rows;
+
+  return folder;
+}
+
 module.exports = {
   createFolder,
   getAllFolders,
   deleteFolder,
-  updateFolderName
+  updateFolderName,
+  updateFlashcardCount,
+  getFolderWithCards
 };

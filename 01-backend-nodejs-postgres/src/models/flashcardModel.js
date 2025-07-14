@@ -1,4 +1,5 @@
 const client = require('../config/db');
+const folderModel = require('./folderModel');
 
 // INSERT: Thêm flashcard mới
 async function insertFlashcard(flashcard) {
@@ -156,7 +157,14 @@ async function deleteFlashcard(flashcardId) {
   `;
 
   const result = await client.query(query, [flashcardId]);
-  return result.rows[0]; // Trả về flashcard đã xoá (nếu có)
+  const deletedFlashcard = result.rows[0];
+
+  if (!deletedFlashcard) return null;
+
+  // Gọi cập nhật số lượng flashcard trong folder
+  await folderModel.updateFlashcardCount(deletedFlashcard.folder_id);
+
+  return deletedFlashcard;
 }
 
 module.exports = {

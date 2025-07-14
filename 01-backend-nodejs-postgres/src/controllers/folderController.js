@@ -61,9 +61,25 @@ async function updateFolderNameController(req, res) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+
+async function getFolderDetails(req, res) {
+  const { id } = req.params;
+  try {
+    const folder = await folderModel.getFolderWithCards(id);
+    if (!folder) {
+      return res.status(404).json({ error: 'Folder không tồn tại' });
+    }
+    res.status(200).json(folder);
+  } catch (err) {
+    console.error('Error fetching folder details:', err);
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+}
+
 module.exports = {
   createFolder,
   getAllFolders,
   deleteFolderController,
   updateFolderNameController,
+  getFolderDetails
 };

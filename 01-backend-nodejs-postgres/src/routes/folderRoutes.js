@@ -9,5 +9,7 @@ router.post('/create', folderController.createFolder);
 router.get('/:user_id', folderController.getAllFolders);
 router.delete('/:id', folderController.deleteFolderController);
 router.put("/:id", folderController.updateFolderNameController);
+// lấy thông tin flashcard từ 1 folder
+router.get('/:id/details', folderController.getFolderDetails);
 
 module.exports = router;

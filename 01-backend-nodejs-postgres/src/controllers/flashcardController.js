@@ -1,10 +1,13 @@
 const flashcardModel = require('../models/flashcardModel');
+const folderModel = require('../models/folderModel');
 
 // Thêm flashcard mới
 async function createFlashcard(req, res) {
   try {
     const flashcard = req.body;
     const newFlashcard = await flashcardModel.insertFlashcard(flashcard);
+    // Gọi cập nhật số lượng flashcard trong folder
+    await folderModel.updateFlashcardCount(flashcard.folder_id);
     res.status(201).json(newFlashcard);
   } catch (error) {
     console.error('Error creating flashcard:', error);
@@ -78,12 +81,11 @@ async function updateFlashcardControler(req, res) {
 async function deleteFlashcardControler(req, res) {
   try {
     const flashcardId = req.params.id;
-
     const deletedFlashcard = await flashcardModel.deleteFlashcard(flashcardId);
-
     if (!deletedFlashcard) {
       return res.status(404).json({ error: 'Flashcard không tồn tại' });
     }
+
 
     res.status(200).json({ message: 'Đã xoá flashcard thành công', deleted: deletedFlashcard });
   } catch (error) {
