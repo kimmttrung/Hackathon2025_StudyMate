@@ -1,11 +1,18 @@
 // import { Layout } from "@/components/Layout";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { TestTube, Clock, Target, Trophy, Play, BarChart } from "lucide-react";
+import { TestTube, Clock, Target, Trophy, Play, BarChart, BookOpen, Folder, Star } from "lucide-react";
+import { useEffect, useState } from "react";
+import { QuizContainer } from "./QuizContainer";
+import axios from "@/utils/axios.customize";
+import { Button } from "@/components/ui/Button";
 
 const PracticeTest = () => {
+    const [selectedFolderId, setSelectedFolderId] = useState(false);
+    const [folders, setFolders] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+
+
     const testTypes = [
         {
             id: 1,
@@ -45,170 +52,97 @@ const PracticeTest = () => {
         { name: "Lịch Sử Việt Nam", score: 94, date: "2 ngày trước" },
     ];
 
+    const filteredFolders = folders.filter((folder) =>
+        folder.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const getUserIdFromToken = () => {
+        const access_token = localStorage.getItem("access_token");
+        const payloadBase64 = access_token.split('.')[1];
+        const payload = JSON.parse(atob(payloadBase64));
+        if (!payload) return null;
+
+        try {
+            return payload.id; // hoặc decoded.user_id tùy backend
+        } catch (err) {
+            console.error("Token invalid:", err);
+            return null;
+        }
+    };
+
+    useEffect(() => {
+        const fetchFolders = async () => {
+            const userId = getUserIdFromToken();
+            if (!userId) return;
+            try {
+                const res = await axios.get(`/api/folders/${userId}`);
+                console.log(">>>check res", res);
+                setFolders(res);
+            } catch (error) {
+                console.error("Lỗi khi tải thư mục:", error);
+            }
+        };
+        fetchFolders();
+    }, []);
+
     return (
         <Layout title="Bài Kiểm Tra">
             <div className="max-w-6xl mx-auto space-y-8">
-                {/* Header */}
-                <div className="text-center space-y-4">
-                    <div className="inline-flex items-center gap-3 text-test-foreground">
-                        <div className="w-12 h-12 rounded-xl bg-test flex items-center justify-center">
-                            <TestTube className="w-6 h-6" />
-                        </div>
-                        <h1 className="text-3xl font-bold">Bài Kiểm Tra Thực Hành</h1>
-                    </div>
-                    <p className="text-muted-foreground max-w-2xl mx-auto">
-                        Thử thách kiến thức của bạn với các bài kiểm tra được thiết kế để
-                        đánh giá mức độ hiểu biết
-                    </p>
-                </div>
-
-                {/* Test Statistics */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Card>
-                        <CardContent className="p-4 text-center">
-                            <div className="text-2xl font-bold text-test">23</div>
-                            <div className="text-sm text-muted-foreground">
-                                Bài test đã làm
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="p-4 text-center">
-                            <div className="text-2xl font-bold text-primary">87%</div>
-                            <div className="text-sm text-muted-foreground">
-                                Điểm trung bình
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="p-4 text-center">
-                            <div className="text-2xl font-bold text-accent">15</div>
-                            <div className="text-sm text-muted-foreground">Streak ngày</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="p-4 text-center">
-                            <div className="text-2xl font-bold text-create">5h 30m</div>
-                            <div className="text-sm text-muted-foreground">Thời gian học</div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Test Types */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <h2 className="text-xl font-semibold">Chọn loại bài kiểm tra</h2>
-
-                        <div className="space-y-4">
-                            {testTypes.map((test) => {
-                                const IconComponent = test.icon;
-                                return (
-                                    <Card
-                                        key={test.id}
-                                        className="group cursor-pointer transition-all duration-300 hover:scale-102 hover:shadow-lg border-2 hover:border-test/50"
-                                    >
-                                        <CardContent className="p-6">
-                                            <div className="flex items-start gap-4">
-                                                <div className="w-12 h-12 rounded-xl bg-test/20 flex items-center justify-center flex-shrink-0">
-                                                    <IconComponent className="w-6 h-6 text-test-foreground" />
-                                                </div>
-
-                                                <div className="flex-1 space-y-3">
-                                                    <div className="flex items-start justify-between">
-                                                        <div>
-                                                            <h3 className="font-semibold text-lg">
-                                                                {test.name}
-                                                            </h3>
-                                                            <p className="text-muted-foreground text-sm">
-                                                                {test.description}
-                                                            </p>
-                                                        </div>
-                                                        <Badge className={test.color}>
-                                                            {test.difficulty}
-                                                        </Badge>
-                                                    </div>
-
-                                                    <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                                                        <div className="flex items-center gap-1">
-                                                            <Clock className="w-4 h-4" />
-                                                            <span>{test.duration}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-1">
-                                                            <Target className="w-4 h-4" />
-                                                            <span>{test.questions} câu hỏi</span>
-                                                        </div>
-                                                    </div>
-
-                                                    <Button
-                                                        className="bg-test hover:bg-test/90 text-test-foreground"
-                                                        size="sm"
-                                                    >
-                                                        Bắt đầu kiểm tra
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* Recent Tests & Statistics */}
+                {!selectedFolderId ? (
                     <div className="space-y-6">
-                        {/* Recent Tests */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <BarChart className="w-5 h-5" />
-                                    Kết quả gần đây
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                {recentTests.map((test, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                                    >
-                                        <div>
-                                            <div className="font-medium text-sm">{test.name}</div>
-                                            <div className="text-xs text-muted-foreground">
-                                                {test.date}
+                        <h2 className="text-2xl font-bold text-center">Chọn thư mục để bắt đầu</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredFolders.map((folder) => (
+                                <Card
+                                    key={folder.id}
+                                    className="border border-gray-200 transition-all duration-300 hover:shadow-lg"
+                                    onClick={() => setSelectedFolderId(folder.id)}
+                                >
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                                                <Folder className="w-5 h-5 text-green-600" />
+                                            </div>
+                                            <div>
+                                                <CardTitle className="text-lg text-black">{folder.name}</CardTitle>
                                             </div>
                                         </div>
-                                        <div
-                                            className={`font-bold ${test.score >= 90
-                                                ? "text-green-600"
-                                                : test.score >= 70
-                                                    ? "text-blue-600"
-                                                    : "text-orange-600"
-                                                }`}
-                                        >
-                                            {test.score}%
-                                        </div>
-                                    </div>
-                                ))}
-                            </CardContent>
-                        </Card>
+                                    </CardHeader>
 
-                        {/* Performance Tips */}
-                        <Card className="bg-gradient-to-br from-test/10 to-primary/5 border-test/30">
-                            <CardHeader>
-                                <CardTitle className="text-test-foreground">
-                                    Mẹo cải thiện
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                <div className="space-y-2">
-                                    <p className="text-sm">🎯 Tập trung vào các chủ đề yếu</p>
-                                    <p className="text-sm">📚 Ôn tập đều đặn mỗi ngày</p>
-                                    <p className="text-sm">⏰ Quản lý thời gian hiệu quả</p>
-                                    <p className="text-sm">🔄 Làm bài test thường xuyên</p>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                    <CardContent className="space-y-3">
+                                        {/* Số thẻ và ngày */}
+                                        <div className="flex justify-between text-sm text-muted-foreground">
+                                            <div className="flex items-center gap-1 text-green-600">
+                                                <BookOpen className="w-4 h-4" />
+                                                {folder.flascardcount || 0} thẻ
+                                            </div>
+                                            <div className="flex items-center gap-1 text-black">
+                                                <Clock className="w-4 h-4" />
+                                                {new Date(folder.created_at).toLocaleDateString("vi-VN")}
+                                            </div>
+                                        </div>
+
+                                        {/* Nút bắt đầu học */}
+                                        <Button
+                                            className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                            onClick={() => fetchFolderDetails(folder.id)}
+                                        >
+                                            🚀 Bắt đầu
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+
+                            ))}
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <QuizContainer
+                        testTypes={testTypes}
+                        selectedFolderId={selectedFolderId}
+                        onBack={() => setSelectedFolderId(false)}
+                    />
+
+                )}
             </div>
         </Layout>
     );
