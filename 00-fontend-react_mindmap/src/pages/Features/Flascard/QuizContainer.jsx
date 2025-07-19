@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, Target } from "lucide-react";
 
-export function QuizContainer({ testTypes, onBack }) {
+export function QuizContainer({ testTypes, onBack, onStartQuiz }) {
     return (
         <div className="lg:col-span-2 space-y-6">
             <h2 className="text-xl font-semibold">Chọn loại bài kiểm tra</h2>
@@ -61,6 +61,7 @@ export function QuizContainer({ testTypes, onBack }) {
                                         <Button
                                             className="bg-test hover:bg-test/90 text-test-foreground"
                                             size="sm"
+                                            onClick={() => onStartQuiz(Number(test.id))}
                                         >
                                             Bắt đầu kiểm tra
                                         </Button>

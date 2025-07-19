@@ -6,11 +6,14 @@ import { useEffect, useState } from "react";
 import { QuizContainer } from "./QuizContainer";
 import axios from "@/utils/axios.customize";
 import { Button } from "@/components/ui/Button";
+import QuizFlashcard from "./QuizFlashcard";
 
 const PracticeTest = () => {
     const [selectedFolderId, setSelectedFolderId] = useState(false);
     const [folders, setFolders] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [view, setView] = useState("choose"); // 'choose' | 'quiz'
+    const [selectedTestId, setSelectedTestId] = useState(null);
 
 
     const testTypes = [
@@ -125,7 +128,6 @@ const PracticeTest = () => {
                                         {/* Nút bắt đầu học */}
                                         <Button
                                             className="w-full bg-green-600 hover:bg-green-700 text-white"
-                                            onClick={() => fetchFolderDetails(folder.id)}
                                         >
                                             🚀 Bắt đầu
                                         </Button>
@@ -136,16 +138,37 @@ const PracticeTest = () => {
                         </div>
                     </div>
                 ) : (
-                    <QuizContainer
-                        testTypes={testTypes}
-                        selectedFolderId={selectedFolderId}
-                        onBack={() => setSelectedFolderId(false)}
-                    />
+                    <>
+                        {view === "choose" && (
+                            <QuizContainer
+                                testTypes={testTypes}
+                                selectedFolderId={selectedFolderId}
+                                onBack={() => setSelectedFolderId(false)}
+                                onStartQuiz={(testId) => {
+                                    setSelectedTestId(testId);
+                                    setView("quiz");
+                                }}
 
+                            />
+                        )}
+                        {view === "quiz" && selectedTestId === 1 && (
+                            <QuizFlashcard testId={1} />
+                        )}
+
+                        {view === "quiz" && selectedTestId === 2 && (
+                            <QuizFlashcard testId={2} />
+                        )}
+                        {view === "quiz" && selectedTestId === 3 && (
+                            <QuizFlashcard testId={3} />
+                        )}
+
+                    </>
                 )}
             </div>
         </Layout>
+
     );
 };
 
 export default PracticeTest;
+
