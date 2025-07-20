@@ -20,4 +20,7 @@ router.put('/:id', flashcardController.updateFlashcardControler);
 // Xoá flashcard
 router.delete('/:id', flashcardController.deleteFlashcardControler);
 
+// GET /api/quiz/:folderId
+router.get("/quiz/:folderId", flashcardController.getQuizByFolder);
+
 module.exports = router;

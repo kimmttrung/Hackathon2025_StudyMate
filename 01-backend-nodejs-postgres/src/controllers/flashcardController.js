@@ -94,11 +94,45 @@ async function deleteFlashcardControler(req, res) {
   }
 }
 
+async function getQuizByFolder(req, res) {
+  const { folderId } = req.params;
+  try {
+    const flashcards = await flashcardModel.getFlashcardForQuizByFolder(folderId);
+
+    if (flashcards.length < 4) {
+      return res.status(400).json({ error: "Cần ít nhất 4 flashcard để tạo quiz" });
+    }
+
+    const quizData = flashcards.map((fc) => {
+      const incorrects = flashcards
+        .filter(f => f.id !== fc.id)
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 3)
+        .map(f => f.back);
+
+      const choices = [...incorrects, fc.back].sort(() => 0.5 - Math.random());
+
+      return {
+        id: fc.id,
+        question: fc.front,
+        choices,
+        correct: choices.indexOf(fc.back)
+      };
+    });
+
+    res.status(200).json(quizData);
+  } catch (error) {
+    console.error("Lỗi khi tạo quiz:", error);
+    res.status(500).json({ error: "Lỗi server khi tạo quiz" });
+  }
+};
+
 module.exports = {
   createFlashcard,
   getFlashcardsByFolder,
   getFlashcardsByDueDate,
   reviewFlashcard,
   updateFlashcardControler,
-  deleteFlashcardControler
+  deleteFlashcardControler,
+  getQuizByFolder
 };

@@ -152,15 +152,20 @@ const PracticeTest = () => {
                             />
                         )}
                         {view === "quiz" && selectedTestId === 1 && (
-                            <QuizFlashcard testId={1} />
+                            <QuizFlashcard testId={1} folderId={selectedFolderId} />
                         )}
 
                         {view === "quiz" && selectedTestId === 2 && (
-                            <QuizFlashcard testId={2} />
+                            <QuizFlashcard testId={2} folderId={selectedFolderId} />
                         )}
                         {view === "quiz" && selectedTestId === 3 && (
-                            <QuizFlashcard testId={3} />
+                            <QuizFlashcard testId={3} folderId={selectedFolderId} />
                         )}
+
+                        {/* {view === "quiz" && selectedTestId && (
+                            <QuizFlashcard testId={selectedTestId} folderId={selectedFolderId} />
+                        )} */}
+
 
                     </>
                 )}

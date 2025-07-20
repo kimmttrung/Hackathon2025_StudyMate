@@ -166,6 +166,13 @@ async function deleteFlashcard(flashcardId) {
 
   return deletedFlashcard;
 }
+async function getFlashcardForQuizByFolder(folderId) {
+  const result = await client.query(
+    `SELECT id, front_text AS front, back_text AS back FROM flashcards WHERE folder_id = $1`,
+    [folderId]
+  );
+  return result.rows;
+}
 
 module.exports = {
   insertFlashcard,
@@ -174,4 +181,5 @@ module.exports = {
   reviewFlashcard,
   updateFlashcard,
   deleteFlashcard,
+  getFlashcardForQuizByFolder
 };
