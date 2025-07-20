@@ -79,7 +79,7 @@ const PracticeTest = () => {
             if (!userId) return;
             try {
                 const res = await axios.get(`/api/folders/${userId}`);
-                console.log(">>>check res", res);
+                // console.log(">>>check res", res);
                 setFolders(res);
             } catch (error) {
                 console.error("Lỗi khi tải thư mục:", error);

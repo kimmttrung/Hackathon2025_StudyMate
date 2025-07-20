@@ -1,51 +1,3 @@
-// import { useNavigate, useLocation } from "react-router-dom";
-
-// import { ArrowLeft, Layers3 } from "lucide-react";
-// import { cn } from "./lib/utils";
-// import { Button } from "./ui/Button";
-
-
-
-// export function Layout({ children, title, showBackButton = true }) {
-//     const navigate = useNavigate();
-//     const location = useLocation();
-//     const isHomePage = location.pathname === "/";
-
-//     return (
-//         <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-//             {/* Header */}
-//             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-//                 <div className="container flex h-16 items-center justify-between">
-//                     <div className="flex items-center gap-4">
-//                         {showBackButton && !isHomePage && (
-//                             <Button
-//                                 size="sm"
-//                                 onClick={() => navigate("/user/flashcards")}
-//                                 className="inline-flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-lg shadow hover:bg-pink-600 transition duration-200"
-//                             >
-//                                 <ArrowLeft className="w-4 h-4" />
-//                                 Trang chủ
-//                             </Button>
-//                         )}
-
-//                         <div className="flex items-center gap-2">
-//                             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-//                                 <Layers3 className="w-5 h-5 text-primary" />
-//                             </div>
-//                             <h1 className={cn("font-bold", title ? "text-lg" : "text-xl")}>
-//                                 {title || "FlashCard Master"}
-//                             </h1>
-//                         </div>
-//                     </div>
-//                 </div>
-//             </header>
-
-//             {/* Main Content */}
-//             <main className="container py-8">{children}</main>
-//         </div>
-//     );
-// }
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -57,6 +9,8 @@ import {
     Menu,
     X,
     ArrowLeft,
+    LogOut,
+    User,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -153,6 +107,11 @@ export default function Layout({ children }) {
     const subtitle = isHome ? navigationMap[currentModule]?.subtitle : "";
     const menuItems = navigationMap[currentModule]?.menu || [];
     const backLink = navigationMap[currentModule]?.basePath || "/";
+    const user = {
+        name: "Trung Mai",
+        avatar: "https://yeudialy.edu.vn/upload/2025/02/anime-nu-cute-chibi-03.webp", // Hoặc URL từ server
+    };
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -212,6 +171,45 @@ export default function Layout({ children }) {
                                 );
                             })}
                         </nav>
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                                className="flex items-center gap-2 focus:outline-none hover:bg-gray-100 p-2 rounded-full"
+                            >
+                                <img
+                                    src={user.avatar}
+                                    alt="User Avatar"
+                                    className="w-9 h-9 rounded-full object-cover border"
+                                />
+                                <span className="hidden md:inline-block text-sm font-medium text-gray-700">
+                                    {user.name}
+                                </span>
+                            </button>
+
+                            {isUserMenuOpen && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-md z-50">
+                                    <Link
+                                        to="/user/profile"
+                                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                        <User className="w-4 h-4 text-blue-500" />
+                                        Chỉnh sửa hồ sơ
+                                    </Link>
+                                    <button
+                                        onClick={() => {
+                                            // xử lý logout ở đây
+                                            navigate("/login");
+                                        }}
+                                        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                    >
+                                        <LogOut className="w-4 h-4 text-red-500" />
+                                        Đăng xuất
+                                    </button>
+                                </div>
+                            )}
+
+                        </div>
+
 
                         {/* Mobile menu button */}
                         <Button
