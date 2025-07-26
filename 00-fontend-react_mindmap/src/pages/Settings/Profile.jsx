@@ -115,20 +115,11 @@ export default function Profile() {
                 form.append("currentPassword", formData.currentPassword);
             }
 
-            const response = await axios.put("/api/users/update", form, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
+            const response = await axios.put("/api/users/update", form,);
 
             // ✅ Sau khi cập nhật thành công, gọi lại API lấy user mới
             const access_token = localStorage.getItem("access_token");
-            const res = await axios.get("/api/users/account", {
-                withCredentials: true, // nếu dùng cookie
-                headers: {
-                    Authorization: `Bearer ${access_token}`, // nếu dùng JWT
-                },
-            });
+            const res = await axios.get("/api/users/account",);
             console.log("check res1", res);
             const updatedUser = res.user;
             setAuth({

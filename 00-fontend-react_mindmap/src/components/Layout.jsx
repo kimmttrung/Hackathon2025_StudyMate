@@ -113,15 +113,8 @@ export default function Layout({ children }) {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const access_token = localStorage.getItem("access_token");
-                const res = await axios.get("/api/users/account", {
-                    withCredentials: true, // nếu dùng cookie
-                    headers: {
-                        Authorization: `Bearer ${access_token}`, // nếu dùng JWT
-                    },
-                });
-                // console.log("check res layout", res);
 
+                const res = await axios.get("/api/users/account");
                 // Axios đã tự parse JSON → res.data chính là object
                 setAuth({
                     isAuthenticated: true,

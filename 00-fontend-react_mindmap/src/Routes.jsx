@@ -20,7 +20,7 @@ import CreateQuestions from './pages/Features/Quiz/CreateQuestions';
 import StudyQuiz from './pages/Features/Quiz/StudyQuiz';
 import TestQuiz from './pages/Features/Quiz/TestQuiz';
 import GameQuiz from './pages/Features/Quiz/GameQuiz';
-import Profile from './pages/User/Profile';
+import Profile from './pages/Settings/Profile';
 import SettingPage from './pages/Settings';
 import InputSettings from './pages/Settings/InputSettings';
 import AISettings from './pages/Settings/AISettings';
