@@ -120,7 +120,7 @@ export default function Layout({ children }) {
                         Authorization: `Bearer ${access_token}`, // nếu dùng JWT
                     },
                 });
-                console.log("check res layout", res);
+                // console.log("check res layout", res);
 
                 // Axios đã tự parse JSON → res.data chính là object
                 setAuth({
@@ -200,7 +200,7 @@ export default function Layout({ children }) {
                                 <img
                                     src={auth.user?.avatar}
                                     alt="User Avatar"
-                                    className="w-9 h-9 rounded-full object-cover border"
+                                    className="w-10 h-10 rounded-full border-2 border-white shadow-md"
                                 />
                                 <span className="hidden md:inline-block text-sm font-medium text-gray-700">
                                     {auth.user?.username}

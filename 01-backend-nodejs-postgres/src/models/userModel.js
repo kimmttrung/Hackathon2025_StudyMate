@@ -3,6 +3,18 @@ const client = require('../config/db');
 const findUserByEmail = async (email) => {
     const result = await client.query(
         `SELECT 
+            id, email, username, password, full_name, gender, date_of_birth, phone, 
+            address_province, address_district, nationality, avatar, created_at
+         FROM users
+         WHERE email = $1`,
+        [email]
+    );
+
+    return result;
+};
+const findUserByEmailWithNotPassword = async (email) => {
+    const result = await client.query(
+        `SELECT 
             id, email, username, full_name, gender, date_of_birth, phone, 
             address_province, address_district, nationality, avatar, created_at
          FROM users
@@ -78,5 +90,6 @@ module.exports = {
     insertUser,
     updateUser,
     findUserByName,
-    updateUserProfile
+    updateUserProfile,
+    findUserByEmailWithNotPassword
 };

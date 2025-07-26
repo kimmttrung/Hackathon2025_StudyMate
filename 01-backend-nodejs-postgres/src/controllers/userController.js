@@ -1,4 +1,4 @@
-const { findUserByEmail, findUserByName, updateUserProfile } = require('../models/userModel');
+const { findUserByEmail, findUserByName, updateUserProfile, findUserByEmailWithNotPassword } = require('../models/userModel');
 const bcrypt = require('bcrypt');
 
 const updateUserController = async (req, res) => {
@@ -55,13 +55,17 @@ const updateUserController = async (req, res) => {
                 return res.status(400).json({ message: 'Vui lòng nhập mật khẩu hiện tại' });
             }
 
+            if (!currentUser.password) {
+                return res.status(500).json({ message: 'Tài khoản chưa có mật khẩu, không thể đổi' });
+            }
+
             const isMatch = await bcrypt.compare(currentPassword, currentUser.password);
             if (!isMatch) {
                 return res.status(401).json({ message: 'Mật khẩu hiện tại không chính xác' });
             }
 
-            const hashedPassword = await bcrypt.hash(password.trim(), 10);
-            updates.password = hashedPassword;
+            const updatedPassword = await bcrypt.hash(password.trim(), 10);
+            updates.password = updatedPassword;
         }
 
         const updatedUser = await updateUserProfile(email, updates);
@@ -78,13 +82,11 @@ const updateUserController = async (req, res) => {
     }
 };
 
-
-
 const getAccountController = async (req, res) => {
     try {
         const email = req.user?.email || req.query.email;
 
-        const userResult = await findUserByEmail(email);
+        const userResult = await findUserByEmailWithNotPassword(email);
 
         if (userResult.rows.length === 0) {
             return res.status(404).json({ message: "User not found" });

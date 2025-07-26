@@ -79,7 +79,6 @@ export default function Profile() {
             form.append("district", formData.district || "");
             form.append("date_of_birth", localDateString(formData.date_of_birth));
             form.append("avatar", formData.avatar); // File
-            // console.log("Avatar:", formData.avatar);
 
             // Nếu người dùng chọn thay đổi mật khẩu
             if (formData.changePassword) {

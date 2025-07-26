@@ -1,10 +1,15 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { FileText, Layers, ClipboardList, CalendarDays, ArrowLeft, PlusCircle, Trash2, Edit3, CheckCircle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "@/components/context/auth.context";
+import axios from "@/utils/axios.customize";
+import { User, LogOut } from "lucide-react";
 
 const DashboardUser = () => {
     const navigate = useNavigate();
+    const { auth, setAuth } = useContext(AuthContext);
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const chartData = [
         { name: "Flashcards", value: 3452 },
         { name: "Mindmaps", value: 982 },
@@ -57,28 +62,111 @@ const DashboardUser = () => {
 
     const progress = Math.round((tasksToday.filter(t => t.done).length / tasksToday.length) * 100);
 
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const token = localStorage.getItem("access_token");
+                const res = await axios.get("/api/users/account", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                // console.log("check res dashboard", res);
+
+                setAuth({
+                    isAuthenticated: true,
+                    user: res.user
+                });
+            } catch (error) {
+                console.error("Lỗi khi lấy thông tin người dùng:", error);
+                setAuth({
+                    isAuthenticated: false,
+                    user: null,
+                });
+            }
+        };
+
+        fetchUser();
+    }, [setAuth]);
+
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
             {/* Header */}
-            <div className="text-center mb-8 p-6 rounded-3xl bg-gradient-to-br from-blue-50 to-cyan-100 shadow-lg border border-blue-100">
-                <div className="relative inline-block">
+            <div className="relative mb-8 p-6 rounded-3xl bg-gradient-to-br from-blue-50 to-cyan-100 shadow-lg border border-blue-100">
+                {/* Thanh trên cùng có avatar nhỏ dropdown */}
+                <div className="flex justify-end">
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                            className="focus:outline-none flex items-center gap-2"
+                        >
+                            <img
+                                src={auth.user?.avatar || "/default-avatar.png"}
+                                alt="avatar"
+                                className="w-10 h-10 rounded-full border-2 border-white shadow-md"
+                            />
+                            <span className="hidden md:inline-block text-sm font-medium text-gray-700">
+                                {auth.user?.username}
+                            </span>
+                        </button>
+
+                        {isUserMenuOpen && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-md z-50">
+                                <Link
+                                    to="/user/profile"
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                    <User className="w-4 h-4 text-blue-500" />
+                                    Chỉnh sửa hồ sơ
+                                </Link>
+                                <button
+                                    onClick={() => {
+                                        setAuth({
+                                            isAuthenticated: false,
+                                            user: {
+                                                email: "",
+                                                username: "",
+                                                phonenumber: "",
+                                                gender: "",
+                                                nationality: "",
+                                                date_of_birth: "",
+                                                district: "",
+                                                full_name: "",
+                                                province: "",
+                                                avatar: "",
+                                            }
+                                        });
+                                        localStorage.clear();
+                                        navigate("/login");
+                                    }}
+                                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                >
+                                    <LogOut className="w-4 h-4 text-red-500" />
+                                    Đăng xuất
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Avatar to ở giữa */}
+                <div className="relative mt-4 flex justify-center">
                     <img
-                        src="https://jbagy.me/wp-content/uploads/2025/03/Hinh-anh-avatar-anime-nu-cute-2.jpg"
+                        src={auth.user?.avatar || "/default-avatar.png"}
                         alt="welcome"
-                        className="mx-auto w-40 h-40 rounded-full border-4 border-white shadow-md"
+                        className="w-40 h-40 rounded-full border-4 border-white shadow-md"
                     />
-                    <span className="absolute bottom-2 right-2 bg-green-500 w-5 h-5 rounded-full border-2 border-white" title="Đang hoạt động"></span>
+                    <span className="absolute bottom-2 right-[calc(50%-20px)] bg-green-500 w-5 h-5 rounded-full border-2 border-white" title="Đang hoạt động"></span>
                 </div>
 
                 <h1 className="text-4xl font-bold text-indigo-600 mt-4 flex justify-center items-center gap-2">
-                    <span>👋</span> Chào mừng bạn quay lại <span className="text-indigo-700">Detina</span>
+                    <span>👋</span> Chào mừng bạn quay lại <span className="text-indigo-700">{auth.user?.username}</span>
                 </h1>
 
                 <p className="text-gray-700 text-lg mt-2 flex items-center justify-center gap-2">
                     📚 Hãy tiếp tục học tập để đạt kết quả tốt hơn mỗi ngày!
                 </p>
             </div>
-
 
             {/* Stat Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
