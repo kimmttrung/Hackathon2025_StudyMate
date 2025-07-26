@@ -18,7 +18,7 @@ const jwtauth = (req, res, next) => {
                     name: decoded.name,
                     id: decoded.id
                 };
-                console.log(">>> check decoded", decoded);
+                // console.log(">>> check decoded", decoded);
                 next();
             } catch (error) {
                 return res.status(401).json({

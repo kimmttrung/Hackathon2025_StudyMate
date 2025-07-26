@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import SocialButton from "./Social";
 import { toast } from 'react-toastify';
 import axios from "@/utils/axios.customize";
+import { AuthContext } from "@/components/context/auth.context";
 
 const LoginForm = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const { setAuth } = useContext(AuthContext);
 
     const togglePasswordView = () => setShowPassword(!showPassword);
     const validateEmail = (email) => {
@@ -50,6 +52,23 @@ const LoginForm = () => {
                     autoClose: 3000,
                     theme: "light"
                 })
+
+                setAuth({
+                    isAuthenticated: true,
+                    user: {
+                        email: res?.user?.email ?? "",
+                        username: res?.user?.username ?? "",
+                        phone: res?.user?.phone ?? "",
+                        gender: res?.user?.gender ?? "",
+                        nationality: res?.user?.nationality ?? "",
+                        date_of_birth: res?.user?.date_of_birth ?? "",
+                        district: res?.user?.district ?? "",
+                        full_name: res?.user?.full_name ?? "",
+                        province: res?.user?.province ?? "",
+                        avatar: res?.user?.avatar.data ?? "",
+                    }
+                })
+
                 navigate("/user/dashboard");
             }
         } catch {

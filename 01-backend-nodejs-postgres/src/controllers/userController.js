@@ -1,21 +1,26 @@
-const { updateUser, findUserByEmail, findUserByName } = require('../models/userModel');
+const { findUserByEmail, findUserByName, updateUserProfile } = require('../models/userModel');
 const bcrypt = require('bcrypt');
 
 const updateUserController = async (req, res) => {
-    const { email, username, password, gender, nationality, phoneNumber, currentPassword } = req.body;
-
-    const user = await findUserByName(username);
-
-    if (user.rows.length > 0) {
-        return res.status(400).json({ message: "Username already existed" })
-    }
+    const {
+        email,
+        username,
+        password,
+        full_name,
+        gender,
+        date_of_birth,
+        phone,
+        province,
+        district,
+        nationality,
+        currentPassword,
+    } = req.body;
 
     if (!email) {
         return res.status(400).json({ message: "Missing email" });
     }
 
     try {
-        // Tìm user hiện tại theo email
         const userResult = await findUserByEmail(email);
         if (userResult.rows.length === 0) {
             return res.status(404).json({ message: "User not found" });
@@ -23,56 +28,82 @@ const updateUserController = async (req, res) => {
 
         const currentUser = userResult.rows[0];
 
-        // Nếu có yêu cầu đổi password, phải kiểm tra currentPassword
-        let updatedPassword = currentUser.password;
+        // Check username duplication
+        if (username && username !== currentUser.username) {
+            const usernameCheck = await findUserByName(username);
+            if (usernameCheck.rows.length > 0) {
+                return res.status(400).json({ message: "Username already exists" });
+            }
+        }
+
+        const updates = {};
+
+        // Only update if value provided
+        if (username) updates.username = username.trim();
+        if (req.file) updates.avatar = req.file.buffer;
+        if (full_name) updates.full_name = full_name.trim();
+        if (gender) updates.gender = gender.trim();
+        if (date_of_birth) updates.date_of_birth = date_of_birth;
+        if (phone) updates.phone = phone.trim();
+        if (province) updates.address_province = province.trim();
+        if (district) updates.address_district = district.trim();
+        if (nationality) updates.nationality = nationality.trim();
+
+        // Update password if provided
         if (password?.trim()) {
-            // Nếu currentPassword là undefined hoặc rỗng, trả về lỗi
             if (!currentPassword) {
                 return res.status(400).json({ message: 'Vui lòng nhập mật khẩu hiện tại' });
             }
 
-            const isMatch = await bcrypt.compare(currentPassword || '', currentUser.password);
+            const isMatch = await bcrypt.compare(currentPassword, currentUser.password);
             if (!isMatch) {
                 return res.status(401).json({ message: 'Mật khẩu hiện tại không chính xác' });
             }
 
-            // Hash password mới
-            updatedPassword = await bcrypt.hash(password.trim(), 10);
+            const hashedPassword = await bcrypt.hash(password.trim(), 10);
+            updates.password = hashedPassword;
         }
 
-        // Giữ lại thông tin cũ nếu không thay đổi
-        const updatedUsername = username?.trim() || currentUser.username;
-        const updatedGender = gender?.trim() || currentUser.gender;
-        const updatedNationality = nationality?.trim() || currentUser.nationality;
-        const updatedPhone = phoneNumber?.trim() || currentUser.phonenumber;
+        const updatedUser = await updateUserProfile(email, updates);
 
-        // Gọi update trong DB
-        await updateUser(
-            email,
-            updatedUsername,
-            updatedPassword,
-            updatedGender,
-            updatedNationality,
-            updatedPhone
-        );
+        return res.status(200).json({
+            message: "Cập nhật thành công",
+            success: true,
+            user: updatedUser
+        });
 
-
-        return res.status(200).json(
-            {
-                message: "Cập nhật thành công",
-                success: true
-            });
     } catch (err) {
-        //console.error(err);
-        res.status(500).json({ message: "Error updating data" });
+        console.error(err);
+        return res.status(500).json({ message: "Lỗi khi cập nhật thông tin người dùng" });
     }
-
 };
 
-const getAccountController = async (req, res) => {
-    return res.status(200).json(req.user);
 
-}
+
+const getAccountController = async (req, res) => {
+    try {
+        const email = req.user?.email || req.query.email;
+
+        const userResult = await findUserByEmail(email);
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const user = userResult.rows[0];
+
+        // Convert avatar buffer to base64
+        if (user.avatar) {
+            user.avatar = `data:image/jpeg;base64,${Buffer.from(user.avatar).toString("base64")}`;
+        }
+
+        return res.status(200).json({ user });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Lỗi khi lấy thông tin người dùng" });
+    }
+};
+
 
 module.exports = {
     updateUserController, getAccountController

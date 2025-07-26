@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 
@@ -14,23 +14,25 @@ import { Switch } from "@/components/ui/Switch";
 import Layout from "@/components/Layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
 import { Label } from "@/components/ui/Label";
+import axios from "@/utils/axios.customize";
+import { toast } from "react-toastify";
+import { AuthContext } from "@/components/context/auth.context";
 
 export default function Profile() {
+    const { setAuth } = useContext(AuthContext);
     const [formData, setFormData] = useState({
-        fullName: "",
-        firstName: "",
-        lastName: "",
+        full_name: "",
         avatar: null,
         gender: "",
-        dateOfBirth: undefined,
-        phone: "+84",
+        date_of_birth: undefined,
+        phone: "",
         province: "",
         district: "",
-        specificAddress: "",
         nationality: "",
-        email: "user@example.com",
-        username: "username123",
+        email: "",
+        username: "",
         changePassword: false,
+        currentPassword: "",
         newPassword: "",
         confirmPassword: "",
         twoFactorAuth: false
@@ -39,7 +41,10 @@ export default function Profile() {
     const [avatarPreview, setAvatarPreview] = useState(null);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [calendarOpen, setCalendarOpen] = useState(false);
+    const { auth } = useContext(AuthContext);
+    // console.log("check auth", auth);
 
     const vietnamProvinces = [
         "Hà Nội", "TP. Hồ Chí Minh", "Đà Nẵng", "Hải Phòng", "Cần Thơ",
@@ -53,10 +58,94 @@ export default function Profile() {
         "Germany", "France", "Japan", "South Korea", "Singapore", "Thailand"
     ];
 
+    const handleSave = async () => {
+        try {
+            const form = new FormData();
+            const localDateString = (date) => {
+                const d = new Date(date);
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, "0"); // tháng từ 0-11
+                const day = String(d.getDate()).padStart(2, "0");
+                return `${year}-${month}-${day}`;
+            };
+
+            form.append("email", formData.email);
+            form.append("username", formData.username);
+            form.append("full_name", formData.full_name || "");
+            form.append("gender", formData.gender || "");
+            form.append("nationality", formData.nationality || "");
+            form.append("phone", formData.phone || "");
+            form.append("province", formData.province || "");
+            form.append("district", formData.district || "");
+            form.append("date_of_birth", localDateString(formData.date_of_birth));
+            form.append("avatar", formData.avatar); // File
+            // console.log("Avatar:", formData.avatar);
+
+            // Nếu người dùng chọn thay đổi mật khẩu
+            if (formData.changePassword) {
+                if (!formData.currentPassword || !formData.newPassword || !formData.confirmPassword) {
+                    return toast.error("Vui lòng điền đầy đủ mật khẩu.");
+                }
+
+                if (formData.newPassword !== formData.confirmPassword) {
+                    return toast.error("Mật khẩu mới không khớp.");
+                }
+
+                form.append("password", formData.newPassword);
+                form.append("currentPassword", formData.currentPassword);
+            }
+
+            const response = await axios.put("/api/users/update", form, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
+            // ✅ Sau khi cập nhật thành công, gọi lại API lấy user mới
+            const access_token = localStorage.getItem("access_token");
+            const res = await axios.get("/api/users/account", {
+                withCredentials: true, // nếu dùng cookie
+                headers: {
+                    Authorization: `Bearer ${access_token}`, // nếu dùng JWT
+                },
+            });
+            console.log("check res1", res);
+            const updatedUser = res.user;
+            setAuth({
+                isAuthenticated: true,
+                user: updatedUser,
+            });
+            // ✅ Đồng thời cập nhật lại formData để phản ánh dữ liệu mới
+            setFormData((prev) => ({
+                ...prev,
+                email: updatedUser.email || "",
+                username: updatedUser.username || "",
+                full_name: updatedUser.full_name || "",
+                gender: updatedUser.gender || "",
+                phone: updatedUser.phone || "",
+                nationality: updatedUser.nationality || "",
+                date_of_birth: updatedUser.date_of_birth ? new Date(updatedUser.date_of_birth) : null,
+                province: updatedUser.address_province || "",
+                district: updatedUser.address_district || "",
+                avatar: null, // reset file upload
+            }));
+
+            toast.success("Cập nhật thành công!");
+        } catch (err) {
+            console.error(err);
+            toast.error(err.response?.data?.message || "Có lỗi xảy ra khi cập nhật.");
+        }
+    };
+
+
     const handleAvatarChange = (e) => {
         const file = e.target.files?.[0];
         if (file) {
-            setFormData((prev) => ({ ...prev, avatar: file }));
+            setFormData((prev) => ({
+                ...prev,
+                avatar: file,
+                avatarPreview: URL.createObjectURL(file), // dùng để preview ảnh mới
+            }));
             const reader = new FileReader();
             reader.onload = (event) => {
                 setAvatarPreview(event.target?.result);
@@ -65,12 +154,26 @@ export default function Profile() {
         }
     };
 
+    useEffect(() => {
+        if (auth?.user) {
+            setFormData({
+                email: auth.user.email || "",
+                username: auth.user.username || "",
+                full_name: auth.user.full_name || "",
+                gender: auth.user.gender || "",
+                phone: auth.user.phone || "",
+                nationality: auth.user.nationality || "",
+                date_of_birth: auth.user.date_of_birth ? new Date(auth.user.date_of_birth) : null,
+                province: auth.user.address_province || "",
+                district: auth.user.address_district || "",
+                avatar: null,
+                avatarPreview: auth.user.avatar || null,
+                changePassword: false,
+                twoFactorAuth: false,
+            });
+        }
+    }, [auth]);
 
-    const handleSave = () => {
-        console.log("Saving profile data:", formData);
-        // Here you would typically send the data to your backend
-        alert("Thông tin hồ sơ đã được lưu thành công!");
-    };
 
     return (
         <Layout title="Chỉnh sửa thông tin cá nhân">
@@ -81,7 +184,7 @@ export default function Profile() {
                             <div className="flex justify-center mb-4">
                                 <div className="relative">
                                     <Avatar className="w-40 h-40 border border-red-500" >
-                                        <AvatarImage src={avatarPreview || undefined} />
+                                        <AvatarImage src={formData.avatarPreview} />
                                         <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm">
                                             <User className="w-3 h-3" />
                                         </AvatarFallback>
@@ -109,11 +212,11 @@ export default function Profile() {
 
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <div>
-                                        <Label htmlFor="fullName">Họ và tên *</Label>
+                                        <Label htmlFor="full_name">Họ và tên *</Label>
                                         <Input
-                                            id="fullName"
-                                            value={formData.fullName}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                                            id="full_name"
+                                            value={formData.full_name}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
                                             placeholder="Nhập họ và tên đầy đủ"
                                             className="mt-2"
                                         />
@@ -154,15 +257,15 @@ export default function Profile() {
                                                     className="w-full mt-2 justify-start text-left font-normal"
                                                 >
                                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {formData.dateOfBirth ? format(formData.dateOfBirth, "dd/MM/yyyy") : "Chọn ngày sinh"}
+                                                    {formData.date_of_birth ? format(new Date(formData.date_of_birth), "dd/MM/yyyy") : "Chọn ngày sinh"}
                                                 </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-auto p-0" align="start">
                                                 <Calendar
                                                     mode="single"
-                                                    selected={formData.dateOfBirth}
+                                                    selected={formData.date_of_birth}
                                                     onSelect={(date) => {
-                                                        setFormData(prev => ({ ...prev, dateOfBirth: date }));
+                                                        setFormData(prev => ({ ...prev, date_of_birth: date }));
                                                         setCalendarOpen(false);
                                                     }}
                                                     initialFocus
@@ -175,7 +278,7 @@ export default function Profile() {
                                         <Label htmlFor="phone">Số điện thoại *</Label>
                                         <Input
                                             id="phone"
-                                            value={formData.phone}
+                                            value={formData.phone || auth.user?.phone}
                                             onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                                             placeholder="+84 123 456 789"
                                             className="mt-2"
@@ -228,18 +331,6 @@ export default function Profile() {
                                         />
                                     </div>
                                 </div>
-
-                                {/* <div>
-                                    <Label htmlFor="specificAddress">Địa chỉ cụ thể *</Label>
-                                    <Textarea
-                                        id="specificAddress"
-                                        value={formData.specificAddress}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, specificAddress: e.target.value }))}
-                                        placeholder="Nhập địa chỉ cụ thể (số nhà, tên đường...)"
-                                        className="mt-2"
-                                        rows={3}
-                                    />
-                                </div> */}
                             </div>
 
                             {/* Account Information */}
@@ -263,10 +354,10 @@ export default function Profile() {
                                         <Input
                                             id="username"
                                             value={formData.username}
-                                            readOnly
+                                            onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
                                             className="mt-2 bg-gray-50"
                                         />
-                                        <p className="text-sm text-gray-500 mt-1">Tên người dùng không thể thay đổi</p>
+
                                     </div>
                                 </div>
                             </div>
@@ -285,48 +376,88 @@ export default function Profile() {
                                 </div>
 
                                 {formData.changePassword && (
-                                    <div className="grid md:grid-cols-2 gap-6 mt-4">
-                                        <div>
-                                            <Label htmlFor="newPassword">Mật khẩu mới *</Label>
+                                    <div className="grid gap-6 mt-4">
+                                        {/* Mật khẩu hiện tại  */}
+                                        <div className="md:col-span-2">
+                                            <Label htmlFor="currentPassword">Mật khẩu hiện tại *</Label>
                                             <div className="relative mt-2">
                                                 <Input
-                                                    id="newPassword"
-                                                    type={showNewPassword ? "text" : "password"}
-                                                    value={formData.newPassword}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, newPassword: e.target.value }))}
-                                                    placeholder="Nhập mật khẩu mới"
+                                                    id="currentPassword"
+                                                    type={showCurrentPassword ? "text" : "password"}
+                                                    value={formData.currentPassword}
+                                                    onChange={(e) =>
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            currentPassword: e.target.value,
+                                                        }))
+                                                    }
+                                                    placeholder="Nhập mật khẩu hiện tại"
                                                 />
                                                 <button
                                                     type="button"
-                                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                                                     className="absolute right-3 top-1/2 transform -translate-y-1/2"
                                                 >
-                                                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                    {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                                 </button>
                                             </div>
                                         </div>
 
-                                        <div>
-                                            <Label htmlFor="confirmPassword">Nhập lại mật khẩu mới *</Label>
-                                            <div className="relative mt-2">
-                                                <Input
-                                                    id="confirmPassword"
-                                                    type={showConfirmPassword ? "text" : "password"}
-                                                    value={formData.confirmPassword}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                                                    placeholder="Nhập lại mật khẩu mới"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                                                >
-                                                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                </button>
+                                        {/* Mật khẩu mới và nhập lại - chung 1 hàng */}
+                                        <div className="grid md:grid-cols-1 gap-5 mt-4">
+                                            {/* Mật khẩu mới */}
+                                            <div>
+                                                <Label htmlFor="newPassword">Mật khẩu mới *</Label>
+                                                <div className="relative mt-2">
+                                                    <Input
+                                                        id="newPassword"
+                                                        type={showNewPassword ? "text" : "password"}
+                                                        value={formData.newPassword}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({ ...prev, newPassword: e.target.value }))
+                                                        }
+                                                        placeholder="Nhập mật khẩu mới"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                                                    >
+                                                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                    </button>
+                                                </div>
                                             </div>
-                                            {formData.newPassword && formData.confirmPassword && formData.newPassword !== formData.confirmPassword && (
-                                                <p className="text-red-500 text-sm mt-1">Mật khẩu không khớp</p>
-                                            )}
+
+                                            {/* Nhập lại mật khẩu mới */}
+                                            <div>
+                                                <Label htmlFor="confirmPassword">Nhập lại mật khẩu mới *</Label>
+                                                <div className="relative mt-2">
+                                                    <Input
+                                                        id="confirmPassword"
+                                                        type={showConfirmPassword ? "text" : "password"}
+                                                        value={formData.confirmPassword}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                confirmPassword: e.target.value,
+                                                            }))
+                                                        }
+                                                        placeholder="Nhập lại mật khẩu mới"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                                                    >
+                                                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                    </button>
+                                                </div>
+                                                {formData.newPassword &&
+                                                    formData.confirmPassword &&
+                                                    formData.newPassword !== formData.confirmPassword && (
+                                                        <p className="text-red-500 text-sm mt-1">Mật khẩu không khớp</p>
+                                                    )}
+                                            </div>
                                         </div>
                                     </div>
                                 )}

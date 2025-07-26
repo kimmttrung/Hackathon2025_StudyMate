@@ -2,12 +2,16 @@ const client = require('../config/db');
 
 const findUserByEmail = async (email) => {
     const result = await client.query(
-        'SELECT * FROM users WHERE email = $1',
+        `SELECT 
+            id, email, username, full_name, gender, date_of_birth, phone, 
+            address_province, address_district, nationality, avatar, created_at
+         FROM users
+         WHERE email = $1`,
         [email]
-    )
+    );
 
     return result;
-}
+};
 
 const insertUser = async (email, hashedPassword) => {
     await client.query(
@@ -43,9 +47,36 @@ const findUserByName = async (username) => {
     return result;
 };
 
+const updateUserProfile = async (email, updates = {}) => {
+    const fields = [];
+    const values = [];
+    let index = 1;
+
+    for (const key in updates) {
+        fields.push(`${key} = $${index++}`);
+        values.push(updates[key]);
+    }
+
+    values.push(email); // WHERE email = $n
+
+    const query = `
+        UPDATE users
+        SET ${fields.join(', ')}
+        WHERE email = $${index}
+        RETURNING id, username, email, avatar, full_name, gender, date_of_birth, phone, address_province, address_district, nationality;
+    `;
+
+    const result = await client.query(query, values);
+    return result.rows[0]; // Trả về user sau khi update
+};
+
+
+
+
 module.exports = {
     findUserByEmail,
     insertUser,
     updateUser,
-    findUserByName
+    findUserByName,
+    updateUserProfile
 };

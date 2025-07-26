@@ -71,7 +71,18 @@ exports.login = async (req, res) => {
         access_token,
         msg: 'Login successful',
         success: true,
-
+        user: {
+          email: user.email,
+          username: user.username,
+          avatar: user.avatar,
+          full_name: user.full_name,
+          gender: user.gender,
+          nationality: user.nationality,
+          phone: user.phone,
+          province: user.address_province,
+          district: user.address_district,
+          date_of_birth: user.date_of_birth,
+        }
       });
     } else {
       res.status(401).json({ msg: 'Retriving user failed' });

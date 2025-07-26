@@ -12,9 +12,11 @@ import {
     LogOut,
     User,
 } from "lucide-react";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "./lib/utils";
+import { AuthContext } from "./context/auth.context";
+import axios from "@/utils/axios.customize";
 
 const navigationMap = {
     flashcards: {
@@ -90,10 +92,10 @@ const navigationMap = {
 };
 
 export default function Layout({ children }) {
+    const { auth, setAuth } = useContext(AuthContext);
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
-
     const getCurrentModule = () => {
         if (location.pathname.includes("/user/flashcards")) return "flashcards";
         if (location.pathname.includes("/user/quiz")) return "quiz";
@@ -107,12 +109,31 @@ export default function Layout({ children }) {
     const subtitle = isHome ? navigationMap[currentModule]?.subtitle : "";
     const menuItems = navigationMap[currentModule]?.menu || [];
     const backLink = navigationMap[currentModule]?.basePath || "/";
-    const user = {
-        name: "Trung Mai",
-        avatar: "https://yeudialy.edu.vn/upload/2025/02/anime-nu-cute-chibi-03.webp", // Hoặc URL từ server
-    };
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const access_token = localStorage.getItem("access_token");
+                const res = await axios.get("/api/users/account", {
+                    withCredentials: true, // nếu dùng cookie
+                    headers: {
+                        Authorization: `Bearer ${access_token}`, // nếu dùng JWT
+                    },
+                });
+                console.log("check res layout", res);
 
+                // Axios đã tự parse JSON → res.data chính là object
+                setAuth({
+                    isAuthenticated: true,
+                    user: res.user,
+                });
+            } catch (error) {
+                console.error("Lỗi khi lấy thông tin người dùng:", error);
+            }
+        };
+
+        fetchUser();
+    }, []);
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
             {/* Header */}
@@ -177,12 +198,12 @@ export default function Layout({ children }) {
                                 className="flex items-center gap-2 focus:outline-none hover:bg-gray-100 p-2 rounded-full"
                             >
                                 <img
-                                    src={user.avatar}
+                                    src={auth.user?.avatar}
                                     alt="User Avatar"
                                     className="w-9 h-9 rounded-full object-cover border"
                                 />
                                 <span className="hidden md:inline-block text-sm font-medium text-gray-700">
-                                    {user.name}
+                                    {auth.user?.username}
                                 </span>
                             </button>
 
@@ -197,6 +218,22 @@ export default function Layout({ children }) {
                                     </Link>
                                     <button
                                         onClick={() => {
+                                            setAuth({
+                                                isAuthenticated: false,
+                                                user: {
+                                                    email: "",
+                                                    username: "",
+                                                    phonenumber: "",
+                                                    gender: "",
+                                                    nationality: "",
+                                                    date_of_birth: "",
+                                                    district: "",
+                                                    full_name: "",
+                                                    province: "",
+                                                    avatar: "",
+                                                }
+                                            })
+                                            localStorage.clear();
                                             navigate("/login");
                                         }}
                                         className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
