@@ -21,6 +21,10 @@ import StudyQuiz from './pages/Features/Quiz/StudyQuiz';
 import TestQuiz from './pages/Features/Quiz/TestQuiz';
 import GameQuiz from './pages/Features/Quiz/GameQuiz';
 import Profile from './pages/User/Profile';
+import SettingPage from './pages/Settings';
+import InputSettings from './pages/Settings/InputSettings';
+import AISettings from './pages/Settings/AISettings';
+import PlaceholderPage from './pages/Settings/PlaceholderPage';
 
 const AppRoutes = () => {
   return (
@@ -46,7 +50,15 @@ const AppRoutes = () => {
           <Route path="quizs/test" element={<TestQuiz />} />
           <Route path="quizs/games" element={<GameQuiz />} />
 
-          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<SettingPage />} />
+          <Route path="settings/profile" element={<Profile />} />
+          <Route path="settings/input-settings" element={<InputSettings />} />
+          <Route path="settings/ai-settings" element={<AISettings />} />
+          <Route path="settings/study-preferences" element={<PlaceholderPage />} />
+          <Route path="settings/privacy-sharing" element={<PlaceholderPage />} />
+          <Route path="settings/group-study" element={<PlaceholderPage />} />
+          <Route path="settings/integrations" element={<PlaceholderPage />} />
+          <Route path="settings/notifications" element={<PlaceholderPage />} />
 
         </Route>
         <Route path="*" element={<NotFound />} />

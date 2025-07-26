@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 
-import { CalendarIcon, Upload, Eye, EyeOff, Smartphone, Shield, Save, User } from "lucide-react";
+import { CalendarIcon, Upload, Eye, EyeOff, Smartphone, Shield, Save, User, Sun, Moon, Monitor, Globe, Palette } from "lucide-react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/Input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/Label";
 import axios from "@/utils/axios.customize";
 import { toast } from "react-toastify";
 import { AuthContext } from "@/components/context/auth.context";
+import { cn } from "@/components/lib/utils";
 
 export default function Profile() {
     const { setAuth } = useContext(AuthContext);
@@ -38,6 +39,20 @@ export default function Profile() {
         twoFactorAuth: false
     });
 
+    const languages = [
+        { value: "vi", label: "Tiếng Việt", flag: "🇻🇳" },
+        { value: "en", label: "English", flag: "🇺🇸" },
+        { value: "jp", label: "日本語", flag: "🇯🇵" },
+        { value: "ko", label: "한국어", flag: "🇰🇷" },
+        { value: "zh", label: "中文", flag: "🇨🇳" },
+    ];
+
+    const themes = [
+        { value: "light", label: "Sáng", icon: Sun },
+        { value: "dark", label: "Tối", icon: Moon },
+        { value: "system", label: "Theo hệ thống", icon: Monitor },
+    ];
+
     const [avatarPreview, setAvatarPreview] = useState(null);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -45,6 +60,12 @@ export default function Profile() {
     const [calendarOpen, setCalendarOpen] = useState(false);
     const { auth } = useContext(AuthContext);
     // console.log("check auth", auth);
+
+    const [settings, setSettings] = useState({
+        language: "vi",
+        theme: "system",
+        darkMode: false,
+    });
 
     const vietnamProvinces = [
         "Hà Nội", "TP. Hồ Chí Minh", "Đà Nẵng", "Hải Phòng", "Cần Thơ",
@@ -484,6 +505,79 @@ export default function Profile() {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Language Settings */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Globe className="w-5 h-5" />
+                                        Ngôn ngữ giao diện
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Chọn ngôn ngữ hiển thị cho ứng dụng
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Select value={settings.language} onValueChange={(value) => setSettings(prev => ({ ...prev, language: value }))}>
+                                        <SelectTrigger className="w-full max-w-xs">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {languages.map((lang) => (
+                                                <SelectItem key={lang.value} value={lang.value}>
+                                                    <div className="flex items-center gap-2">
+                                                        <span>{lang.flag}</span>
+                                                        <span>{lang.label}</span>
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </CardContent>
+                            </Card>
+
+                            {/* Theme Settings */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Palette className="w-5 h-5" />
+                                        Giao diện
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Tùy chỉnh chế độ hiển thị sáng/tối
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <RadioGroup
+                                        value={settings.theme}
+                                        onValueChange={(value) => setSettings(prev => ({ ...prev, theme: value }))}
+                                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                                    >
+                                        {themes.map((theme) => {
+                                            const Icon = theme.icon;
+                                            return (
+                                                <div key={theme.value} className="relative">
+                                                    <RadioGroupItem
+                                                        value={theme.value}
+                                                        id={theme.value}
+                                                        className="peer sr-only"
+                                                    />
+                                                    <Label
+                                                        htmlFor={theme.value}
+                                                        className={cn(
+                                                            "flex flex-col items-center gap-2 rounded-lg border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-all",
+                                                            settings.theme === theme.value && "border-primary bg-accent"
+                                                        )}
+                                                    >
+                                                        <Icon className="w-6 h-6" />
+                                                        <span className="font-medium">{theme.label}</span>
+                                                    </Label>
+                                                </div>
+                                            );
+                                        })}
+                                    </RadioGroup>
+                                </CardContent>
+                            </Card>
 
                             {/* Save Button */}
                             <div className="flex justify-center pt-6">

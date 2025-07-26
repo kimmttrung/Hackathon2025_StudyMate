@@ -63,7 +63,6 @@ const Sidebar = () => {
                     />
                 </SidebarSection> */}
                 <SidebarSection title="" collapsed={collapsed}>
-                    <SidebarItem icon={<Home className="w-5 h-5" />} label="Trang chủ" to="/" active={isActive("/")} collapsed={collapsed} />
                     <SidebarItem icon={<Settings className="w-5 h-5" />} label="Settings" to="/user/settings" active={isActive("/user/settings")} collapsed={collapsed} />
                 </SidebarSection>
             </nav>
