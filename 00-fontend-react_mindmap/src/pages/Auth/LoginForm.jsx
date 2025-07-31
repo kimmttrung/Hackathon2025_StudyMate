@@ -56,18 +56,18 @@ const LoginForm = () => {
                 setAuth({
                     isAuthenticated: true,
                     user: {
-                        email: res?.user?.email ?? "",
-                        username: res?.user?.username ?? "",
-                        phone: res?.user?.phone ?? "",
-                        gender: res?.user?.gender ?? "",
-                        nationality: res?.user?.nationality ?? "",
-                        date_of_birth: res?.user?.date_of_birth ?? "",
-                        district: res?.user?.district ?? "",
-                        full_name: res?.user?.full_name ?? "",
-                        province: res?.user?.province ?? "",
-                        avatar: res?.user?.avatar.data ?? "",
-                    }
-                })
+                        email: res?.user?.email || "",
+                        username: res?.user?.username || "",
+                        phone: res?.user?.phone || "",
+                        gender: res?.user?.gender || "",
+                        nationality: res?.user?.nationality || "",
+                        date_of_birth: res?.user?.date_of_birth || "",
+                        district: res?.user?.district || "",
+                        full_name: res?.user?.full_name || "",
+                        province: res?.user?.province || "",
+                        avatar: res?.user?.avatar?.data || "", // an toàn hơn
+                    },
+                });
 
                 navigate("/user/dashboard");
             }

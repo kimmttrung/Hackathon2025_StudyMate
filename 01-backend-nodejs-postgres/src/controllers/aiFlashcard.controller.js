@@ -17,7 +17,7 @@ exports.handleFileUpload = async (req, res) => {
         console.log("📄 Text trích xuất:", text);
 
         const cardCount = Number(req.body.cardCount) || 5;
-        const flashcards = await generateFlashcardsWithCohere(text, cardCount);
+        const flashcards = await generateFlashcardsWithOpenAI(text, cardCount);
         res.json(flashcards);
     } catch (error) {
         console.error("AI flashcard error:", error);
@@ -29,7 +29,7 @@ exports.handleTextInput = async (req, res) => {
     try {
         const { text } = req.body;
         console.log(">>> check text1", text);
-        const flashcards = await generateFlashcardsWithCohere(text);
+        const flashcards = await generateFlashcardsWithOpenAI(text);
         res.json(flashcards);
     } catch (error) {
         console.error("Text input AI error:", error);
