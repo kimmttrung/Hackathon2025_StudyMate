@@ -115,21 +115,48 @@ const CreateFlascard = () => {
     ];
 
     const handleUploadAndGenerate = async () => {
-        setLoading(true);
-        const file = document.getElementById(`file-${uploadedIndex}`).files[0];
-        console.log(">>>check file", file);
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("cardCount", cardCount); // mặc định là số bạn nhập từ input
+        try {
+            setLoading(true);
 
+            const file = document.getElementById(`file-${uploadedIndex}`).files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("cardCount", cardCount);
+            formData.append("folder_id", selectedFolder.id);
 
-        const res = await axios.post("/api/ai/upload", formData, {
-        });
-        // console.log("check res file", res);
-        setGeneratedFlashcards(res); // nếu bạn hiển thị ra
-        setUploadedFileName("");               // Xóa tên file đã chọn
-        setUploadedIndex(null);                // Reset chỉ mục upload
+            console.log("check folderid", selectedFolder.id);
+
+            const res = await axios.post("/api/ai/upload", formData);
+            console.log("check res ", res);
+
+            // 👇 Bổ sung: Lưu từng flashcard vào DB
+            const folderId = selectedFolder.id; // hãy chắc bạn có folder_id phù hợp
+            const savedCards = await Promise.all(
+                res.map((fc) =>
+                    axios.post("/api/flashcards/create", {
+                        folder_id: folderId,
+                        front_text: fc.front_text,
+                        back_text: fc.back_text,
+                    })
+                )
+            );
+
+            // 👇 Sau khi lưu DB, cập nhật hiển thị
+            setGeneratedFlashcards(savedCards.map((res) => res.date));
+            toast.success("Đã tạo và lưu flashcards!");
+
+            // Reset upload
+            setUploadedFileName("");
+            setUploadedIndex(null);
+            await fetchFlashcards();
+        } catch (error) {
+            console.error("Lỗi khi tạo flashcard:", error);
+            toast.error("Không thể tạo flashcard từ AI");
+        } finally {
+            setLoading(false);
+        }
     };
+
     const fileInputsRef = useRef([]);
 
     const handleAddCardInput = () => {
@@ -184,7 +211,6 @@ const CreateFlascard = () => {
             })
             toast.success("Đã cập nhật thư mục");
             await fetchFolders();
-            // setEditingFolder(null);
         } catch (error) {
 
         }
@@ -583,17 +609,6 @@ const CreateFlascard = () => {
                                                             </div>
                                                         </div>
                                                     )}
-                                                    {Array.isArray(generatedFlashcards) && generatedFlashcards.length > 0 && (
-                                                        <div className="space-y-4 mt-6">
-                                                            <h3 className="text-lg font-semibold">🔍 Kết quả Flashcards:</h3>
-                                                            {generatedFlashcards.map((card, index) => (
-                                                                <div key={index} className="border p-4 rounded-lg bg-purple-50">
-                                                                    <p><strong>Mặt trước:</strong> {card.front}</p>
-                                                                    <p><strong>Mặt sau:</strong> {card.back}</p>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
 
 
                                                 </CardContent>
@@ -694,7 +709,7 @@ const CreateFlascard = () => {
                                 <table className="min-w-full text-sm text-left border border-gray-200 rounded-lg">
                                     <thead className="bg-gray-100">
                                         <tr>
-                                            <th className="px-4 py-2">ID</th>
+                                            <th className="px-4 py-2">STT</th>
                                             <th className="px-4 py-2">Mặt trước</th>
                                             <th className="px-4 py-2">Mặt sau</th>
                                             <th className="px-4 py-2">Ngày tạo</th>

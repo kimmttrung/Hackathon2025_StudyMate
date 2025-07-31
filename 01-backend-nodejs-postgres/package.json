@@ -20,6 +20,7 @@
     "@azure/core-auth": "^1.10.0",
     "@azure/identity": "^4.10.2",
     "@azure/ms-rest-js": "^2.7.0",
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.10.0",
     "backend-nodejs-postgresql": "file:",
     "bcrypt": "^6.0.0",
@@ -36,7 +37,8 @@
     "pdf-parse": "^1.1.1",
     "pdf-poppler": "^0.2.1",
     "pg": "^8.16.2",
-    "tesseract.js": "^6.0.1"
+    "tesseract.js": "^6.0.1",
+    "textract": "^2.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",

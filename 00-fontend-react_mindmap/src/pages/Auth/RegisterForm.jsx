@@ -53,9 +53,9 @@ const RegisterForm = () => {
             }
         } catch (error) {
             // xử lý lỗi trả về từ backend
-            if (err.response && err.response.data && err.response.data.msg) {
+            if (error.response && error.response.data && error.response.data.msg) {
                 toast.error(err.response.data.msg);
-                console.log(">>> Error", err.response.data.msg);
+                console.log(">>> Error", error.response.data.msg);
             } else {
                 toast.error("Register failed");
             }
