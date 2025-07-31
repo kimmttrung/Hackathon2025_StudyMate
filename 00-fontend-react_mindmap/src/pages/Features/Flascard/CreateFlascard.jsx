@@ -124,7 +124,6 @@ const CreateFlascard = () => {
 
 
         const res = await axios.post("/api/ai/upload", formData, {
-            headers: { "Content-Type": "multipart/form-data" },
         });
         // console.log("check res file", res);
         setGeneratedFlashcards(res); // nếu bạn hiển thị ra
