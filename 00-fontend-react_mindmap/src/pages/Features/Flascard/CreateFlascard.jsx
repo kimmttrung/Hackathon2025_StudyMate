@@ -79,9 +79,10 @@ const CreateFlascard = () => {
     const [editFront, setEditFront] = useState("");
     const [editBack, setEditBack] = useState("");
     const [showRecentPanel, setShowRecentPanel] = useState(false);
-    const [generatedFlashcards, setGeneratedFlashcards] = useState([]);
-    const [cardCount, setCardCount] = useState(5); // mặc định 5 thẻ
+    const [cardCount, setCardCount] = useState();
     const [loading, setLoading] = useState(false);
+    const [reloadFlashcards, setReloadFlashcards] = useState(false);
+
 
     const recentlyCreated = [
         { name: "Từ vựng tiếng Anh", cards: 15, type: "user", date: "Hôm nay" },
@@ -127,28 +128,13 @@ const CreateFlascard = () => {
             console.log("check folderid", selectedFolder.id);
 
             const res = await axios.post("/api/ai/upload", formData);
-            console.log("check res ", res);
-
-            // 👇 Bổ sung: Lưu từng flashcard vào DB
-            const folderId = selectedFolder.id; // hãy chắc bạn có folder_id phù hợp
-            const savedCards = await Promise.all(
-                res.map((fc) =>
-                    axios.post("/api/flashcards/create", {
-                        folder_id: folderId,
-                        front_text: fc.front_text,
-                        back_text: fc.back_text,
-                    })
-                )
-            );
-
-            // 👇 Sau khi lưu DB, cập nhật hiển thị
-            setGeneratedFlashcards(savedCards.map((res) => res.date));
+            // console.log("check res ", res);
             toast.success("Đã tạo và lưu flashcards!");
 
             // Reset upload
             setUploadedFileName("");
             setUploadedIndex(null);
-            await fetchFlashcards();
+            setReloadFlashcards((prev) => !prev);
         } catch (error) {
             console.error("Lỗi khi tạo flashcard:", error);
             toast.error("Không thể tạo flashcard từ AI");
@@ -156,8 +142,6 @@ const CreateFlascard = () => {
             setLoading(false);
         }
     };
-
-    const fileInputsRef = useRef([]);
 
     const handleAddCardInput = () => {
         setCards((prev) => [
@@ -297,9 +281,9 @@ const CreateFlascard = () => {
                     back_text: card.back,
                 });
             }
-            fetchFlashcards();
             toast.success("Đã lưu các flashcard thành công!");
             setCards([{ id: crypto.randomUUID(), front: "", back: "" }]); // reset
+            setReloadFlashcards((prev) => !prev);
         } catch (error) {
             console.error("Error inserting flashcard:", error);
             toast.error("Lỗi khi thêm flashcard");
@@ -321,6 +305,7 @@ const CreateFlascard = () => {
         setDialogOpen(true);
     };
 
+    // Gọi API edit
     const handleConfirmEdit = async () => {
         try {
             const id = flashcards[selectedIndex]?.id;
@@ -331,8 +316,8 @@ const CreateFlascard = () => {
                 back_text: editBack,
             });
             // Cập nhật lại danh sách flashcards 
-            fetchFlashcards();
             toast.success(`Cập nhật thành công thẻ ${selectedIndex + 1}`);
+            setReloadFlashcards((prev) => !prev);
             setDialogOpen(false);
         } catch (error) {
             console.error("Lỗi cập nhật flashcard:", error);
@@ -346,23 +331,10 @@ const CreateFlascard = () => {
         if (!id) return toast.error("Không tìm thấy ID thẻ để xóa");
 
         await axios.delete(`/api/flashcards/${id}`);
-        fetchFlashcards();
+        setReloadFlashcards((prev) => !prev);
         toast.success(`🗑️ Đã xoá thẻ ${selectedIndex}`);
         setDialogOpen(false);
     };
-
-    const fetchFlashcards = async () => {
-        if (!selectedFolder?.id) return;
-        try {
-            const res = await axios.get(`/api/flashcards/folder/${selectedFolder.id}`);
-            // console.log(">>> check flashcards", res);
-            setFlashcards(res);
-        } catch (error) {
-            toast.error("Lỗi khi lấy flashcard");
-            console.error(error);
-        }
-    };
-
 
     useEffect(() => {
         const fetchData = async () => {
@@ -372,23 +344,25 @@ const CreateFlascard = () => {
         fetchData();
     }, []);
 
-
-
     useEffect(() => {
-        const fetchFlashcards = async () => {
-            if (!selectedFolder?.id) return;
+        if (!selectedFolder?.id) return;
+        let cancelled = false;
+
+        const fetch = async () => {
             try {
                 const res = await axios.get(`/api/flashcards/folder/${selectedFolder.id}`);
-                // console.log(">>> check flashcards", res);
-                setFlashcards(res);
+                if (!cancelled) setFlashcards(res);
             } catch (error) {
                 toast.error("Lỗi khi lấy flashcard");
-                console.error(error);
             }
         };
-        fetchFlashcards();
-    }, [selectedFolder]);
 
+        fetch();
+
+        return () => {
+            cancelled = true; // huỷ nếu component unmount
+        };
+    }, [selectedFolder?.id, reloadFlashcards]);
 
     if (selectedFolder) {
         return (
@@ -724,7 +698,11 @@ const CreateFlascard = () => {
                                                 <td className="px-4 py-2">{card.front_text}</td>
                                                 <td className="px-4 py-2">{card.back_text}</td>
                                                 <td className="px-4 py-2">{new Date(card.created_at).toLocaleDateString("vi-VN")}</td>
-                                                <td className="px-4 py-2">{new Date(card.last_update).toLocaleDateString("vi-VN")}</td>
+                                                <td className="px-4 py-2">
+                                                    {card.last_update
+                                                        ? new Date(card.last_update).toLocaleDateString("vi-VN")
+                                                        : "Chưa cập nhật"}
+                                                </td>
                                                 <td className="px-4 py-2 flex gap-2 justify-center">
                                                     <Button variant="outline" onClick={() => handleEditFlashcard(index)}>Edit</Button>
                                                     <Button variant="destructive" onClick={() => handleDeleteFlashcard(index)}>Xóa</Button>

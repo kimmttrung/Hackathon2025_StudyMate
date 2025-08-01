@@ -64,7 +64,6 @@ Yêu cầu:
 - Trả về MẢNG JSON đúng định dạng: 
 [
   { "front": "Câu hỏi 1", "back": "Câu trả lời 1" },
-  { "front": "Câu hỏi 2", "back": "Câu trả lời 2" },
   ...
 ]
 
@@ -114,6 +113,7 @@ exports.handleFileUpload = async (req, res) => {
     try {
         const file = req.file;
         const count = parseInt(req.body.cardCount) || 10;
+        console.log("Card count request:", req.body.cardCount);
         const folder_id = req.body.folder_id; // 👈 phải truyền từ FE
 
         if (!file) return res.status(400).json({ error: "Chưa có file." });
@@ -135,9 +135,15 @@ exports.handleFileUpload = async (req, res) => {
         }
 
         const aiFlashcards = await generateFlashcards(text, count); // [{ front, back }]
+
+        console.log("check aiFlashcards", aiFlashcards);
+
+        // Cắt bớt nếu Gemini trả nhiều hơn yêu cầu
+        const limitedFlashcards = aiFlashcards.slice(0, count);
+
         const savedFlashcards = [];
 
-        for (const fc of aiFlashcards) {
+        for (const fc of limitedFlashcards) {
             const saved = await flashcardModel.insertFlashcard({
                 folder_id,
                 front_text: fc.front,
