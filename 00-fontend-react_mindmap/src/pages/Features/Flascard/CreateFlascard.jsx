@@ -79,7 +79,7 @@ const CreateFlascard = () => {
     const [editFront, setEditFront] = useState("");
     const [editBack, setEditBack] = useState("");
     const [showRecentPanel, setShowRecentPanel] = useState(false);
-    const [cardCount, setCardCount] = useState();
+    const [cardCount, setCardCount] = useState(2);
     const [loading, setLoading] = useState(false);
     const [reloadFlashcards, setReloadFlashcards] = useState(false);
 
@@ -607,7 +607,10 @@ const CreateFlascard = () => {
                                                             className="min-h-[120px]"
                                                         />
                                                     </div>
-                                                    <Button className="w-full bg-gradient-to-r from-create to-accent text-white">
+                                                    <Button
+                                                        className="w-full bg-gradient-to-r from-create to-accent text-white"
+                                                        onClick={handleUploadAndGenerate}
+                                                    >
                                                         <Sparkles className="w-4 h-4 mr-2" />
                                                         Tạo bằng AI
                                                     </Button>

@@ -168,11 +168,27 @@ async function deleteFlashcard(flashcardId) {
 }
 async function getFlashcardForQuizByFolder(folderId) {
   const result = await client.query(
-    `SELECT id, front_text AS front, back_text AS back FROM flashcards WHERE folder_id = $1`,
+    `
+    SELECT 
+      f.id, 
+      f.front_text AS front, 
+      f.back_text AS back,
+      f.folder_id,
+      folders.name AS folder_name
+    FROM flashcards f
+    JOIN folders ON f.folder_id = folders.id
+    WHERE f.folder_id = $1
+    `,
     [folderId]
   );
   return result.rows;
 }
+
+async function updateQuizScore(folderId, score) {
+  const query = `UPDATE folders SET coreQuizFlashcard = $1 WHERE id = $2`;
+  await client.query(query, [score, folderId]);
+}
+
 
 module.exports = {
   insertFlashcard,
@@ -181,5 +197,6 @@ module.exports = {
   reviewFlashcard,
   updateFlashcard,
   deleteFlashcard,
-  getFlashcardForQuizByFolder
+  getFlashcardForQuizByFolder,
+  updateQuizScore
 };

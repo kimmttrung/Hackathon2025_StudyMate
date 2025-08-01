@@ -5,6 +5,7 @@ require("dotenv").config();
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
 const fs = require("fs");
+const folderModel = require('../models/folderModel');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
@@ -111,6 +112,8 @@ exports.handleTextInput = async (req, res) => {
 // 📁 Từ FILE (PDF, DOC, IMAGE)
 exports.handleFileUpload = async (req, res) => {
     try {
+        console.log("check req body", req.body);
+
         const file = req.file;
         const count = parseInt(req.body.cardCount) || 10;
         console.log("Card count request:", req.body.cardCount);
@@ -134,7 +137,11 @@ exports.handleFileUpload = async (req, res) => {
             return res.status(400).json({ error: "Định dạng file không hỗ trợ." });
         }
 
-        const aiFlashcards = await generateFlashcards(text, count); // [{ front, back }]
+        let aiFlashcards = await generateFlashcards(text, count); // [{ front, back }]
+        aiFlashcards = aiFlashcards.map(fc => ({
+            ...fc,
+            folder_id
+        }));
 
         console.log("check aiFlashcards", aiFlashcards);
 
@@ -151,6 +158,9 @@ exports.handleFileUpload = async (req, res) => {
             });
             savedFlashcards.push(saved);
         }
+
+        // Gọi cập nhật số lượng flashcard trong folder
+        await folderModel.updateFlashcardCount(folder_id);
 
         return res.status(200).json(savedFlashcards);
     } catch (error) {

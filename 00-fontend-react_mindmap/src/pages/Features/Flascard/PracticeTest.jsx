@@ -161,12 +161,6 @@ const PracticeTest = () => {
                         {view === "quiz" && selectedTestId === 3 && (
                             <QuizFlashcard testId={3} folderId={selectedFolderId} />
                         )}
-
-                        {/* {view === "quiz" && selectedTestId && (
-                            <QuizFlashcard testId={selectedTestId} folderId={selectedFolderId} />
-                        )} */}
-
-
                     </>
                 )}
             </div>

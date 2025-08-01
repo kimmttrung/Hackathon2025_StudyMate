@@ -23,4 +23,6 @@ router.delete('/:id', flashcardController.deleteFlashcardControler);
 // GET /api/quiz/:folderId
 router.get("/quiz/:folderId", flashcardController.getQuizByFolder);
 
+router.post("/quiz/submit", flashcardController.submitQuiz);
+
 module.exports = router;

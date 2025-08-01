@@ -76,11 +76,17 @@ async function getFolderWithCards(folderId) {
   return folder;
 }
 
+async function updateQuizScore(folderId, score) {
+  const query = `UPDATE folders SET corequizflashcard = $1 WHERE id = $2`;
+  await client.query(query, [score, folderId]);
+}
+
 module.exports = {
   createFolder,
   getAllFolders,
   deleteFolder,
   updateFolderName,
   updateFlashcardCount,
-  getFolderWithCards
+  getFolderWithCards,
+  updateQuizScore
 };

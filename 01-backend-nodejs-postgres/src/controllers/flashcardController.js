@@ -5,6 +5,7 @@ const folderModel = require('../models/folderModel');
 async function createFlashcard(req, res) {
   try {
     const flashcard = req.body;
+    console.log("check flashcard create", flashcard);
     const newFlashcard = await flashcardModel.insertFlashcard(flashcard);
     // Gọi cập nhật số lượng flashcard trong folder
     await folderModel.updateFlashcardCount(flashcard.folder_id);
@@ -103,6 +104,8 @@ async function getQuizByFolder(req, res) {
       return res.status(400).json({ error: "Cần ít nhất 4 flashcard để tạo quiz" });
     }
 
+    const folderName = flashcards[0]?.folder_name;
+
     const quizData = flashcards.map((fc) => {
       const incorrects = flashcards
         .filter(f => f.id !== fc.id)
@@ -116,7 +119,8 @@ async function getQuizByFolder(req, res) {
         id: fc.id,
         question: fc.front,
         choices,
-        correct: choices.indexOf(fc.back)
+        correct: choices.indexOf(fc.back),
+        folderName
       };
     });
 
@@ -127,6 +131,32 @@ async function getQuizByFolder(req, res) {
   }
 };
 
+// Gửi kết quả và tính điểm
+async function submitQuiz(req, res) {
+  const { folderId, answers } = req.body;
+
+  try {
+    const flashcards = await flashcardModel.getFlashcardForQuizByFolder(folderId);
+    let correctCount = 0;
+
+    for (const fc of flashcards) {
+      if (answers[fc.id] !== undefined && answers[fc.id] === fc.back) {
+        correctCount++;
+      }
+    }
+
+    const score = Math.round((correctCount / flashcards.length) * 100);
+
+    // ✅ Lưu điểm vào cột `coreQuizFlashcard` của bảng folders
+    await folderModel.updateQuizScore(folderId, score);
+
+    res.status(200).json({ score });
+  } catch (err) {
+    console.error("❌ Lỗi khi chấm điểm:", err);
+    res.status(500).json({ error: "Lỗi khi nộp bài và tính điểm" });
+  }
+}
+
 module.exports = {
   createFlashcard,
   getFlashcardsByFolder,
@@ -134,5 +164,6 @@ module.exports = {
   reviewFlashcard,
   updateFlashcardControler,
   deleteFlashcardControler,
-  getQuizByFolder
+  getQuizByFolder,
+  submitQuiz
 };
