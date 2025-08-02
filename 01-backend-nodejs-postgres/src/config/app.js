@@ -19,6 +19,7 @@ const flashcardRoutes = require('../routes/flashcardRoutes');
 const folderRoutes = require('../routes/folderRoutes');
 const reviewRoutes = require('../routes/reviewRoutes');
 const aiRoutes = require("../routes/aiFlashcard.route");
+const folderQuizRoutes = require('../routes/folderQuizRoute');
 //middleware if having 
 
 //use data routes   
@@ -28,6 +29,7 @@ app.use("/api/flashcards", flashcardRoutes);
 app.use("/api/folders", folderRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/folder-quiz", folderQuizRoutes)
 
 app.use((req, res) => {
     res.status(404).json({ error: "Not Found" });

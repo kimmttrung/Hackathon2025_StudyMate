@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -49,6 +49,8 @@ import {
     File,
     Image,
 } from "lucide-react";
+import axios from "@/utils/axios.customize";
+import { toast } from 'react-toastify';
 
 export default function CreateQuestions() {
     const [selectedFolder, setSelectedFolder] = useState(null);
@@ -57,108 +59,82 @@ export default function CreateQuestions() {
     const [editingFolder, setEditingFolder] = useState(null);
     const [uploadedContent, setUploadedContent] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
+    const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const [folders, setFolders] = useState([
-        {
-            id: "1",
-            name: "Toán học lớp 10",
-            questionCount: 25,
-            createdAt: "2024-01-15",
-        },
-        {
-            id: "2",
-            name: "Tiếng Anh cơ bản",
-            questionCount: 18,
-            createdAt: "2024-01-14",
-        },
-        {
-            id: "3",
-            name: "Lịch sử Việt Nam",
-            questionCount: 32,
-            createdAt: "2024-01-13",
-        },
-    ]);
+    const [foldersQuiz, setFoldersQuiz] = useState([]);
     const [questions, setQuestions] = useState([
-        {
-            id: "1",
-            question: "Giải phương trình x² - 5x + 6 = 0",
-            answer: "x = 2 hoặc x = 3",
-            type: "open-ended",
-            difficulty: "medium",
-        },
-        {
-            id: "2",
-            question: "Đạo hàm của hàm số f(x) = x³ là gì?",
-            answer: "3x²",
-            options: ["3x²", "x²", "3x", "x³"],
-            type: "multiple-choice",
-            difficulty: "easy",
-        },
     ]);
 
-    const filteredFolders = folders.filter((folder) =>
+    const filteredFolders = foldersQuiz.filter((folder) =>
         folder.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
-    const handleCreateFolder = () => {
-        if (newFolderName.trim()) {
-            const newFolder = {
-                id: Date.now().toString(),
-                name: newFolderName.trim(),
-                questionCount: 0,
-                createdAt: new Date().toISOString().split("T")[0],
-            };
-            setFolders([...folders, newFolder]);
-            setNewFolderName("");
+    const getUserIdFromToken = () => {
+        const access_token = localStorage.getItem("access_token");
+        const payloadBase64 = access_token.split('.')[1];
+        const payload = JSON.parse(atob(payloadBase64));
+        if (!payload) return null;
+
+        try {
+            return payload.id; // hoặc decoded.user_id tùy backend
+        } catch (err) {
+            console.error("Token invalid:", err);
+            return null;
+        }
+    };
+
+    const fetchFoldersQuiz = async () => {
+        const user_id = getUserIdFromToken();
+        if (!user_id) return;
+
+        try {
+            setLoading(true);
+            const res = await axios.get(`/api/folder-quiz/user/${user_id}`);
+            console.log("check folder", res);
+            setFoldersQuiz(res.folders);
+        } catch (error) {
+            console.error('Lỗi khi lấy danh sách thư mục quiz:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCreateFolder = async () => {
+        const user_id = getUserIdFromToken();
+        // console.log("check user_id", user_id);
+        if (!user_id || !newFolderName.trim()) return;
+
+        try {
+            const res = await axios.post('/api/folder-quiz/create', {
+                user_id,
+                name: newFolderName.trim()
+            });
+
+            toast.success("✅ Tạo thư mục thành công");
+            setNewFolderName(""); // Reset input
+            setOpen(false); // Nếu bạn có setOpen cho Dialog, đóng nó lại
+            fetchFoldersQuiz();
+        } catch (err) {
+            toast.error("❌ Lỗi khi tạo thư mục");
+            console.error("Lỗi tạo thư mục quiz:", err);
         }
     };
 
     const handleEditFolder = (folder) => {
-        if (editingFolder && editingFolder.name.trim()) {
-            setFolders(
-                folders.map((f) =>
-                    f.id === folder.id ? { ...f, name: editingFolder.name.trim() } : f,
-                ),
-            );
-            setEditingFolder(null);
-        }
+
     };
 
     const handleDeleteFolder = (folderId) => {
-        setFolders(folders.filter((f) => f.id !== folderId));
-        if (selectedFolder?.id === folderId) {
-            setSelectedFolder(null);
-        }
+
     };
 
     const handleGenerateQuestions = async () => {
-        if (!uploadedContent.trim()) return;
-
-        setIsGenerating(true);
-        // Simulate AI generation
-        setTimeout(() => {
-            const newQuestions = [
-                {
-                    id: Date.now().toString(),
-                    question: "Câu hỏi mới được tạo từ nội dung đã upload",
-                    answer: "Đáp án được AI tạo ra",
-                    type: "open-ended",
-                    difficulty: "medium",
-                },
-                {
-                    id: (Date.now() + 1).toString(),
-                    question: "Câu hỏi trắc nghiệm từ tài liệu",
-                    answer: "Đáp án A",
-                    options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
-                    type: "multiple-choice",
-                    difficulty: "easy",
-                },
-            ];
-            setQuestions([...questions, ...newQuestions]);
-            setUploadedContent("");
-            setIsGenerating(false);
-        }, 2000);
     };
+
+    useEffect(() => {
+        fetchFoldersQuiz();
+    }, []);
 
     if (selectedFolder) {
         return (
@@ -340,6 +316,7 @@ export default function CreateQuestions() {
     return (
         <Layout>
             <div className="space-y-6">
+                {loading && <p>Đang tải thư mục...</p>}
                 <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">Tạo Câu Hỏi</h1>
@@ -347,7 +324,8 @@ export default function CreateQuestions() {
                             Quản lý thư mục và tạo câu hỏi từ tài liệu
                         </p>
                     </div>
-                    <Dialog>
+                    {/* Thêm thư mục  */}
+                    <Dialog open={open} onOpenChange={setOpen}>
                         <DialogTrigger asChild>
                             <Button className="bg-blue-600 hover:bg-blue-700">
                                 <Plus className="w-4 h-4 mr-2" />
@@ -418,12 +396,13 @@ export default function CreateQuestions() {
                                                 {folder.name}
                                             </CardTitle>
                                             <CardDescription>
-                                                {folder.questionCount} câu hỏi •{" "}
-                                                {new Date(folder.createdAt).toLocaleDateString("vi-VN")}
+                                                {folder.num_quizzes} câu hỏi •{" "}
+                                                {new Date(folder.created_at).toLocaleDateString("vi-VN")}
                                             </CardDescription>
                                         </div>
                                     </div>
                                     <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {/* Edit thư mục  */}
                                         <Dialog>
                                             <DialogTrigger asChild>
                                                 <Button
@@ -476,6 +455,7 @@ export default function CreateQuestions() {
                                             </DialogContent>
                                         </Dialog>
 
+                                        {/* Xóa thư mục  */}
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button

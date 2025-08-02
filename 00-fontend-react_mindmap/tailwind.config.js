@@ -19,6 +19,9 @@ module.exports = {
       },
     },
     extend: {
+      maxHeight: {
+        'screen-minus-30': 'calc(100vh - 30px)',
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
