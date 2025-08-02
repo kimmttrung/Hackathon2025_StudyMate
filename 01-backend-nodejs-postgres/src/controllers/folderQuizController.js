@@ -38,9 +38,43 @@ const getFolderQuiz = async (req, res) => {
     }
 };
 
+// Xóa folder
+const deleteFolderQuiz = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleted = await FolderQuiz.deleteFolderQuiz(id);
+        if (!deleted) {
+            return res.status(404).json({ message: "Không tìm thấy thư mục" });
+        }
+        res.json({ message: "Xóa thư mục thành công", folder: deleted });
+    } catch (error) {
+        console.error("Lỗi khi xóa folder:", error);
+        res.status(500).json({ message: "Lỗi server" });
+    }
+};
 
+// Sửa tên folder
+const updateFolderQuiz = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name } = req.body;
+        if (!name) {
+            return res.status(400).json({ message: "Thiếu tên thư mục mới" });
+        }
+        const updated = await FolderQuiz.updateFolderQuiz(id, name.trim());
+        if (!updated) {
+            return res.status(404).json({ message: "Không tìm thấy thư mục để cập nhật" });
+        }
+        res.json({ message: "Cập nhật thành công", folder: updated });
+    } catch (error) {
+        console.error("Lỗi khi cập nhật:", error);
+        res.status(500).json({ message: "Lỗi server" });
+    }
+};
 
 module.exports = {
     createFolderQuiz,
-    getFolderQuiz
+    getFolderQuiz,
+    deleteFolderQuiz,
+    updateFolderQuiz
 };

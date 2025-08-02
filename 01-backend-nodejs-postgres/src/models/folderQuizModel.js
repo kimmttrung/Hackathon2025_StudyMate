@@ -23,7 +23,30 @@ const getFolderQuizByUserId = async (userId) => {
     return result.rows;
 };
 
+// Xóa
+const deleteFolderQuiz = async (folderId) => {
+    const query = `DELETE FROM folderquizs WHERE id = $1 RETURNING *;`;
+    const values = [folderId];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+};
+
+// Chỉnh sửa
+const updateFolderQuiz = async (folderId, newName) => {
+    const query = `
+    UPDATE folderquizs
+    SET name = $1, updated_at = NOW()
+    WHERE id = $2
+    RETURNING *;
+  `;
+    const values = [newName, folderId];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+};
+
 module.exports = {
     createFolderQuiz,
-    getFolderQuizByUserId
+    getFolderQuizByUserId,
+    deleteFolderQuiz,
+    updateFolderQuiz
 };

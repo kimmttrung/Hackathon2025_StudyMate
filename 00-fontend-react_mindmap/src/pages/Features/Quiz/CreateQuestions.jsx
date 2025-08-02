@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
     Dialog,
+    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
@@ -59,12 +60,11 @@ export default function CreateQuestions() {
     const [editingFolder, setEditingFolder] = useState(null);
     const [uploadedContent, setUploadedContent] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
-    const [open, setOpen] = useState(false);
+    // const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const [foldersQuiz, setFoldersQuiz] = useState([]);
-    const [questions, setQuestions] = useState([
-    ]);
+    const [questions, setQuestions] = useState([]);
 
     const filteredFolders = foldersQuiz.filter((folder) =>
         folder.name.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -91,7 +91,7 @@ export default function CreateQuestions() {
         try {
             setLoading(true);
             const res = await axios.get(`/api/folder-quiz/user/${user_id}`);
-            console.log("check folder", res);
+            // console.log("check folder", res);
             setFoldersQuiz(res.folders);
         } catch (error) {
             console.error('Lỗi khi lấy danh sách thư mục quiz:', error);
@@ -113,20 +113,49 @@ export default function CreateQuestions() {
 
             toast.success("✅ Tạo thư mục thành công");
             setNewFolderName(""); // Reset input
-            setOpen(false); // Nếu bạn có setOpen cho Dialog, đóng nó lại
-            fetchFoldersQuiz();
+            // setEditingFolder(null);
+            await fetchFoldersQuiz();
         } catch (err) {
             toast.error("❌ Lỗi khi tạo thư mục");
             console.error("Lỗi tạo thư mục quiz:", err);
         }
     };
 
-    const handleEditFolder = (folder) => {
+    // Chỉnh sửa folder
+    const handleEditFolder = async (folder) => {
+        if (!folder || !folder.name.trim()) {
+            toast.error("Tên thư mục không được để trống");
+            return;
+        }
 
+        try {
+            const res = await axios.put(`/api/folder-quiz/${folder.id}`, {
+                name: folder.name.trim(),
+            });
+            // console.log("check res1", res);
+            toast.success("Cập nhật thư mục thành công");
+
+            // Cập nhật lại danh sách folderQuiz
+            await fetchFoldersQuiz();
+            setEditingFolder(null);
+        } catch (error) {
+            console.error("Lỗi khi cập nhật thư mục:", error);
+            toast.error("Lỗi khi cập nhật thư mục");
+        }
     };
 
-    const handleDeleteFolder = (folderId) => {
+    // Xóa folder
+    const handleDeleteFolder = async (folderId) => {
+        try {
+            const res = await axios.delete(`/api/folder-quiz/${folderId}`);
+            toast.success("Đã xóa thư mục");
 
+            // Cập nhật lại danh sách folderQuiz
+            await fetchFoldersQuiz();
+        } catch (error) {
+            console.error("Lỗi khi xóa thư mục:", error);
+            toast.error("Lỗi khi xóa thư mục");
+        }
     };
 
     const handleGenerateQuestions = async () => {
@@ -325,7 +354,7 @@ export default function CreateQuestions() {
                         </p>
                     </div>
                     {/* Thêm thư mục  */}
-                    <Dialog open={open} onOpenChange={setOpen}>
+                    <Dialog >
                         <DialogTrigger asChild>
                             <Button className="bg-blue-600 hover:bg-blue-700">
                                 <Plus className="w-4 h-4 mr-2" />
@@ -351,17 +380,21 @@ export default function CreateQuestions() {
                                 </div>
                             </div>
                             <DialogFooter>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setNewFolderName("")}>
-                                    Hủy
-                                </Button>
-                                <Button
-                                    onClick={handleCreateFolder}
-                                    disabled={!newFolderName.trim()}
-                                >
-                                    Tạo thư mục
-                                </Button>
+                                <DialogClose asChild>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setNewFolderName("")}>
+                                        Hủy
+                                    </Button>
+                                </DialogClose>
+                                <DialogClose asChild>
+                                    <Button
+                                        onClick={handleCreateFolder}
+                                        disabled={!newFolderName.trim()}
+                                    >
+                                        Tạo thư mục
+                                    </Button>
+                                </DialogClose>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
@@ -403,7 +436,7 @@ export default function CreateQuestions() {
                                     </div>
                                     <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         {/* Edit thư mục  */}
-                                        <Dialog>
+                                        <Dialog >
                                             <DialogTrigger asChild>
                                                 <Button
                                                     variant="ghost"
@@ -416,44 +449,54 @@ export default function CreateQuestions() {
                                                     <Edit3 className="w-4 h-4" />
                                                 </Button>
                                             </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>Sửa tên thư mục</DialogTitle>
-                                                    <DialogDescription>
-                                                        Nhập tên mới cho thư mục
-                                                    </DialogDescription>
-                                                </DialogHeader>
-                                                <div className="space-y-4">
-                                                    <div>
-                                                        <Label htmlFor="edit-folder-name">
-                                                            Tên thư mục
-                                                        </Label>
-                                                        <Input
-                                                            id="edit-folder-name"
-                                                            value={editingFolder?.name || ""}
-                                                            onChange={(e) =>
-                                                                setEditingFolder(
-                                                                    editingFolder
-                                                                        ? { ...editingFolder, name: e.target.value }
-                                                                        : null,
-                                                                )
-                                                            }
-                                                        />
+                                            {editingFolder && (
+                                                <DialogContent>
+                                                    <DialogHeader>
+                                                        <DialogTitle>Sửa tên thư mục</DialogTitle>
+                                                        <DialogDescription>
+                                                            Nhập tên mới cho thư mục
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <Label htmlFor="edit-folder-name">Tên thư mục</Label>
+                                                            <Input
+                                                                id="edit-folder-name"
+                                                                value={editingFolder?.name || ""}
+                                                                onChange={(e) =>
+                                                                    setEditingFolder(
+                                                                        editingFolder
+                                                                            ? { ...editingFolder, name: e.target.value }
+                                                                            : null,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <DialogFooter>
-                                                    <Button
-                                                        variant="outline"
-                                                        onClick={() => setEditingFolder(null)}
-                                                    >
-                                                        Hủy
-                                                    </Button>
-                                                    <Button onClick={() => handleEditFolder(folder)}>
-                                                        Lưu
-                                                    </Button>
-                                                </DialogFooter>
-                                            </DialogContent>
+                                                    <DialogFooter>
+                                                        <DialogClose asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={() => {
+                                                                    setEditingFolder(null);
+                                                                }}
+                                                            >
+                                                                Hủy
+                                                            </Button>
+                                                        </DialogClose>
+                                                        <DialogClose asChild>
+                                                            <Button onClick={() => {
+                                                                handleEditFolder(editingFolder)
+                                                            }}>
+                                                                Lưu
+                                                            </Button>
+                                                        </DialogClose>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            )}
+
                                         </Dialog>
+
 
                                         {/* Xóa thư mục  */}
                                         <AlertDialog>
@@ -490,6 +533,7 @@ export default function CreateQuestions() {
                                     </div>
                                 </div>
                             </CardHeader>
+                            {/* Quiz bên trong */}
                             <CardContent
                                 className="pt-0 cursor-pointer"
                                 onClick={() => setSelectedFolder(folder)}

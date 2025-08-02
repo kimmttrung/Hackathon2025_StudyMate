@@ -213,34 +213,6 @@ const CreateFlascard = () => {
         }
     };
 
-    //     if (!uploadedContent.trim()) return;
-    //     setIsGenerating(true);
-    //     // Simulate AI generation
-    //     setTimeout(() => {
-    //         const newQuestions = [
-    //             {
-    //                 id: Date.now().toString(),
-    //                 question: "Câu hỏi mới được tạo từ nội dung đã upload",
-    //                 answer: "Đáp án được AI tạo ra",
-    //                 type: "open-ended",
-    //                 difficulty: "medium",
-    //             },
-    //             {
-    //                 id: (Date.now() + 1).toString(),
-    //                 question: "Câu hỏi trắc nghiệm từ tài liệu",
-    //                 answer: "Đáp án A",
-    //                 options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
-    //                 type: "multiple-choice",
-    //                 difficulty: "easy",
-    //             },
-    //         ];
-    //         setQuestions([...questions, ...newQuestions]);
-    //         setUploadedContent("");
-    //         setIsGenerating(false);
-    //     }, 2000);
-    // };
-
-
     // Hàm lấy user_id từ token
     const getUserIdFromToken = () => {
         const access_token = localStorage.getItem("access_token");
