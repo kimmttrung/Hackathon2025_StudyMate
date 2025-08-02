@@ -25,6 +25,7 @@ import SettingPage from './pages/Settings';
 import InputSettings from './pages/Settings/InputSettings';
 import AISettings from './pages/Settings/AISettings';
 import PlaceholderPage from './pages/Settings/PlaceholderPage';
+import UpgradePage from './pages/Settings/UpgradePage';
 
 const AppRoutes = () => {
   return (
@@ -59,6 +60,7 @@ const AppRoutes = () => {
           <Route path="settings/group-study" element={<PlaceholderPage />} />
           <Route path="settings/integrations" element={<PlaceholderPage />} />
           <Route path="settings/notifications" element={<PlaceholderPage />} />
+          <Route path="settings/upgrade" element={<UpgradePage />} />
 
         </Route>
         <Route path="*" element={<NotFound />} />

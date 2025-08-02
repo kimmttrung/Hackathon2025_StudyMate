@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
     BookOpen,
     RotateCcw,
@@ -11,6 +10,7 @@ import {
     ArrowLeft,
     LogOut,
     User,
+    Bell, Rocket
 } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -94,7 +94,8 @@ const navigationMap = {
 export default function Layout({ children }) {
     const { auth, setAuth } = useContext(AuthContext);
     const location = useLocation();
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
     const navigate = useNavigate();
     const getCurrentModule = () => {
         if (location.pathname.includes("/user/flashcards")) return "flashcards";
@@ -110,6 +111,13 @@ export default function Layout({ children }) {
     const menuItems = navigationMap[currentModule]?.menu || [];
     const backLink = navigationMap[currentModule]?.basePath || "/user/settings  ";
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const [notifications, setNotifications] = useState([
+        { id: 1, text: "Hoàn thành bài tập từ vựng hôm nay", type: "task", read: false },
+        { id: 2, text: "Giao tiếp tiếng Anh lúc 19:00", type: "schedule", read: false },
+        { id: 3, text: "Tin nhắn mới từ Văn Cường: 'Chúc bạn học tốt!'", type: "message", read: true },
+        { id: 4, text: "Thảo luận mới: 'Nên học flashcard theo chủ đề'", type: "discussion", read: false },
+    ]);
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -185,7 +193,22 @@ export default function Layout({ children }) {
                                 );
                             })}
                         </nav>
-                        <div className="relative">
+
+                        <div className="relative flex items-center gap-2">
+                            {/* Thông báo */}
+                            <button
+                                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                                className="relative p-2 rounded-full hover:bg-gray-100"
+                            >
+                                <Bell className="w-6 h-6 text-yellow-500" />
+                                {/* Số lượng thông báo chưa đọc */}
+                                {notifications.filter(n => !n.read).length > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
+                                        {notifications.filter(n => !n.read).length}
+                                    </span>
+                                )}
+                            </button>
+
                             <button
                                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                                 className="flex items-center gap-2 focus:outline-none hover:bg-gray-100 p-2 rounded-full"
@@ -200,101 +223,96 @@ export default function Layout({ children }) {
                                 </span>
                             </button>
 
-                            {isUserMenuOpen && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-md z-50">
-                                    <Link
-                                        to="/user/settings/profile"
-                                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                    >
-                                        <User className="w-4 h-4 text-blue-500" />
-                                        Chỉnh sửa hồ sơ
-                                    </Link>
-                                    <button
-                                        onClick={() => {
-                                            setAuth({
-                                                isAuthenticated: false,
-                                                user: {
-                                                    email: "",
-                                                    username: "",
-                                                    phonenumber: "",
-                                                    gender: "",
-                                                    nationality: "",
-                                                    date_of_birth: "",
-                                                    district: "",
-                                                    full_name: "",
-                                                    province: "",
-                                                    avatar: "",
-                                                }
-                                            })
-                                            localStorage.clear();
-                                            navigate("/login");
-                                        }}
-                                        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                    >
-                                        <LogOut className="w-4 h-4 text-red-500" />
-                                        Đăng xuất
-                                    </button>
-                                </div>
-                            )}
+
 
                         </div>
-
-
-                        {/* Mobile menu button */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="md:hidden"
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        >
-                            {isMobileMenuOpen ? (
-                                <X className="w-5 h-5" />
-                            ) : (
-                                <Menu className="w-5 h-5" />
-                            )}
-                        </Button>
                     </div>
                 </div>
+                {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-md z-50">
+                        <Link
+                            to="/user/settings/profile"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                            <User className="w-4 h-4 text-blue-500" />
+                            Chỉnh sửa hồ sơ
+                        </Link>
 
-                {/* Mobile Navigation */}
-                {isMobileMenuOpen && (
-                    <div className="md:hidden bg-white border-t border-gray-200">
-                        <div className="px-4 py-3 space-y-2">
-                            {navigationItems.map((item) => {
-                                const isActive = location.pathname === item.href;
-                                return (
-                                    <Link
-                                        key={item.href}
-                                        to={item.href}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        <div
-                                            className={cn(
-                                                "flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200",
-                                                isActive
-                                                    ? "bg-blue-500 text-white"
-                                                    : "text-gray-600 hover:bg-blue-50",
-                                            )}
-                                        >
-                                            <item.icon className="w-5 h-5" />
-                                            <div>
-                                                <div className="font-medium">{item.title}</div>
-                                                <div
-                                                    className={cn(
-                                                        "text-sm",
-                                                        isActive ? "text-blue-100" : "text-gray-500",
-                                                    )}
-                                                >
-                                                    {item.description}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                );
-                            })}
+                        {/* Nâng cấp */}
+                        <Link
+                            to="/user/settings/upgrade"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                        >
+                            <Rocket className="w-4 h-4 text-purple-600" />
+                            Nâng cấp tài khoản
+                        </Link>
+
+                        <button
+                            onClick={() => {
+                                setAuth({
+                                    isAuthenticated: false,
+                                    user: {
+                                        email: "",
+                                        username: "",
+                                        phonenumber: "",
+                                        gender: "",
+                                        nationality: "",
+                                        date_of_birth: "",
+                                        district: "",
+                                        full_name: "",
+                                        province: "",
+                                        avatar: "",
+                                    }
+                                })
+                                localStorage.clear();
+                                navigate("/login");
+                            }}
+                            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        >
+                            <LogOut className="w-4 h-4 text-red-500" />
+                            Đăng xuất
+                        </button>
+                    </div>
+                )}
+
+                {isNotificationOpen && (
+                    <div className="absolute right-0 mt-3 w-96 bg-white shadow-xl rounded-lg z-50 p-4 border border-gray-200">
+                        <h4 className="text-lg font-semibold mb-3">Thông báo</h4>
+
+                        {/* Chưa đọc */}
+                        <div className="mb-4">
+                            <h5 className="text-sm font-semibold text-gray-600 mb-2">🔴 Chưa đọc</h5>
+                            <ul className="text-sm space-y-2 max-h-40 overflow-y-auto">
+                                {notifications.filter(n => !n.read).length === 0 && (
+                                    <li className="text-gray-500">Không có thông báo mới.</li>
+                                )}
+                                {notifications.filter(n => !n.read).map(n => (
+                                    <li key={n.id} className="flex items-start gap-2 bg-yellow-50 px-3 py-2 rounded-md">
+                                        <span>{getIcon(n.type)}</span>
+                                        <span>{n.text}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Đã đọc */}
+                        <div>
+                            <h5 className="text-sm font-semibold text-gray-600 mb-2">⚪ Đã đọc</h5>
+                            <ul className="text-sm space-y-2 max-h-40 overflow-y-auto">
+                                {notifications.filter(n => n.read).length === 0 && (
+                                    <li className="text-gray-500">Chưa có thông báo nào đã đọc.</li>
+                                )}
+                                {notifications.filter(n => n.read).map(n => (
+                                    <li key={n.id} className="flex items-start gap-2 text-gray-500 px-3 py-2 hover:bg-gray-50 rounded-md">
+                                        <span>{getIcon(n.type)}</span>
+                                        <span>{n.text}</span>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
                 )}
+
             </header>
 
             {/* Main Content */}
@@ -303,4 +321,19 @@ export default function Layout({ children }) {
             </main>
         </div>
     );
+}
+
+function getIcon(type) {
+    switch (type) {
+        case "task":
+            return "✅";
+        case "schedule":
+            return "📅";
+        case "message":
+            return "💬";
+        case "discussion":
+            return "🗨️";
+        default:
+            return "🔔";
+    }
 }

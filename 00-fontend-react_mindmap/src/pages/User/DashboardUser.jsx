@@ -66,11 +66,8 @@ const DashboardUser = () => {
         const fetchUser = async () => {
             try {
                 const token = localStorage.getItem("access_token");
-                const res = await axios.get("/api/users/account", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                const res = await axios.get("/api/users/account"
+                );
                 // console.log("check res dashboard", res);
 
                 setAuth({
@@ -93,62 +90,6 @@ const DashboardUser = () => {
         <div className="p-6 bg-gray-50 min-h-screen">
             {/* Header */}
             <div className="relative mb-8 p-6 rounded-3xl bg-gradient-to-br from-blue-50 to-cyan-100 shadow-lg border border-blue-100">
-                {/* Thanh trên cùng có avatar nhỏ dropdown */}
-                <div className="flex justify-end">
-                    <div className="relative">
-                        <button
-                            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                            className="focus:outline-none flex items-center gap-2"
-                        >
-                            <img
-                                src={auth.user?.avatar || "/default-avatar.png"}
-                                alt="avatar"
-                                className="w-10 h-10 rounded-full border-2 border-white shadow-md"
-                            />
-                            <span className="hidden md:inline-block text-sm font-medium text-gray-700">
-                                {auth.user?.username}
-                            </span>
-                        </button>
-
-                        {isUserMenuOpen && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-md z-50">
-                                <Link
-                                    to="/user/settings/profile"
-                                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                >
-                                    <User className="w-4 h-4 text-blue-500" />
-                                    Chỉnh sửa hồ sơ
-                                </Link>
-                                <button
-                                    onClick={() => {
-                                        setAuth({
-                                            isAuthenticated: false,
-                                            user: {
-                                                email: "",
-                                                username: "",
-                                                phonenumber: "",
-                                                gender: "",
-                                                nationality: "",
-                                                date_of_birth: "",
-                                                district: "",
-                                                full_name: "",
-                                                province: "",
-                                                avatar: "",
-                                            }
-                                        });
-                                        localStorage.clear();
-                                        navigate("/login");
-                                    }}
-                                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                >
-                                    <LogOut className="w-4 h-4 text-red-500" />
-                                    Đăng xuất
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
                 {/* Avatar to ở giữa */}
                 <div className="relative mt-4 flex justify-center">
                     <img

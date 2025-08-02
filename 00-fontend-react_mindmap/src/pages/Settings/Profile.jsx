@@ -148,7 +148,6 @@ export default function Profile() {
         }
     };
 
-
     const handleAvatarChange = (e) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -187,403 +186,401 @@ export default function Profile() {
 
 
     return (
-        <Layout title="Chỉnh sửa thông tin cá nhân">
+        <Layout >
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4">
-                <div className="max-w-4xl mx-auto">
-                    <Card className="shadow-xl border-0 bg-white/70 backdrop-blur-sm">
-                        <CardHeader className="text-center pb-6">
-                            <div className="flex justify-center mb-4">
-                                <div className="relative">
-                                    <Avatar className="w-40 h-40 border border-red-500" >
-                                        <AvatarImage src={formData.avatarPreview} />
-                                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm">
-                                            <User className="w-3 h-3" />
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-1 rounded-full cursor-pointer shadow-lg transition-colors">
-                                        <Upload className="w-3 h-3" />
-                                    </label>
-                                    <input
-                                        id="avatar-upload"
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleAvatarChange}
-                                        className="hidden"
-                                    />
-                                </div>
+                <Card className="shadow-xl border-0 bg-white/70 backdrop-blur-sm">
+                    <CardHeader className="text-center pb-6">
+                        <div className="flex justify-center mb-4">
+                            <div className="relative">
+                                <Avatar className="w-40 h-40 border border-red-500" >
+                                    <AvatarImage src={formData.avatarPreview} />
+                                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm">
+                                        <User className="w-3 h-3" />
+                                    </AvatarFallback>
+                                </Avatar>
+                                <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-1 rounded-full cursor-pointer shadow-lg transition-colors">
+                                    <Upload className="w-3 h-3" />
+                                </label>
+                                <input
+                                    id="avatar-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleAvatarChange}
+                                    className="hidden"
+                                />
                             </div>
-                            <CardTitle>Ảnh đại diện</CardTitle>
-                            <CardDescription>Tải lên ảnh đại diện mới để hiển thị trong hồ sơ</CardDescription>
-                        </CardHeader>
+                        </div>
+                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white" >Ảnh đại diện</CardTitle>
+                        <CardDescription>Tải lên ảnh đại diện mới để hiển thị trong hồ sơ</CardDescription>
+                    </CardHeader>
 
-                        <CardContent className="space-y-8">
-                            {/* Basic Information */}
-                            <div className="space-y-6">
-                                <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-2">Thông tin cơ bản</h3>
+                    <CardContent className="space-y-8">
+                        {/* Basic Information */}
+                        <div className="space-y-6">
+                            <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-2">Thông tin cơ bản</h3>
 
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div>
-                                        <Label htmlFor="full_name">Họ và tên *</Label>
-                                        <Input
-                                            id="full_name"
-                                            value={formData.full_name}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                                            placeholder="Nhập họ và tên đầy đủ"
-                                            className="mt-2"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label>Giới tính *</Label>
-                                        <RadioGroup
-                                            value={formData.gender}
-                                            onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
-                                            className="mt-2"
-                                        >
-                                            <div className="flex items-center space-x-6">
-                                                <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="male" id="male" />
-                                                    <Label htmlFor="male">Nam</Label>
-                                                </div>
-                                                <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="female" id="female" />
-                                                    <Label htmlFor="female">Nữ</Label>
-                                                </div>
-                                                <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="other" id="other" />
-                                                    <Label htmlFor="other">Khác</Label>
-                                                </div>
-                                            </div>
-                                        </RadioGroup>
-                                    </div>
-                                </div>
-
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div>
-                                        <Label>Ngày sinh *</Label>
-                                        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    className="w-full mt-2 justify-start text-left font-normal"
-                                                >
-                                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {formData.date_of_birth ? format(new Date(formData.date_of_birth), "dd/MM/yyyy") : "Chọn ngày sinh"}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={formData.date_of_birth}
-                                                    onSelect={(date) => {
-                                                        setFormData(prev => ({ ...prev, date_of_birth: date }));
-                                                        setCalendarOpen(false);
-                                                    }}
-                                                    initialFocus
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="phone">Số điện thoại *</Label>
-                                        <Input
-                                            id="phone"
-                                            value={formData.phone || auth.user?.phone}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                                            placeholder="+84 123 456 789"
-                                            className="mt-2"
-                                        />
-                                    </div>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <Label htmlFor="full_name">Họ và tên *</Label>
+                                    <Input
+                                        id="full_name"
+                                        value={formData.full_name}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+                                        placeholder="Nhập họ và tên đầy đủ"
+                                        className="mt-2"
+                                    />
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="nationality">Quốc tịch *</Label>
-                                    <Select value={formData.nationality} onValueChange={(value) => setFormData(prev => ({ ...prev, nationality: value }))}>
+                                    <Label>Giới tính *</Label>
+                                    <RadioGroup
+                                        value={formData.gender}
+                                        onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
+                                        className="mt-2"
+                                    >
+                                        <div className="flex items-center space-x-6">
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="male" id="male" />
+                                                <Label htmlFor="male">Nam</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="female" id="female" />
+                                                <Label htmlFor="female">Nữ</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="other" id="other" />
+                                                <Label htmlFor="other">Khác</Label>
+                                            </div>
+                                        </div>
+                                    </RadioGroup>
+                                </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <Label>Ngày sinh *</Label>
+                                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full mt-2 justify-start text-left font-normal"
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {formData.date_of_birth ? format(new Date(formData.date_of_birth), "dd/MM/yyyy") : "Chọn ngày sinh"}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={formData.date_of_birth}
+                                                onSelect={(date) => {
+                                                    setFormData(prev => ({ ...prev, date_of_birth: date }));
+                                                    setCalendarOpen(false);
+                                                }}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="phone">Số điện thoại *</Label>
+                                    <Input
+                                        id="phone"
+                                        value={formData.phone || auth.user?.phone}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                                        placeholder="+84 123 456 789"
+                                        className="mt-2"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="nationality">Quốc tịch *</Label>
+                                <Select value={formData.nationality} onValueChange={(value) => setFormData(prev => ({ ...prev, nationality: value }))}>
+                                    <SelectTrigger className="mt-2">
+                                        <SelectValue placeholder="Chọn quốc tịch" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {countries.map((country) => (
+                                            <SelectItem key={country} value={country}>{country}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        {/* Address Information */}
+                        <div className="space-y-6">
+                            <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-2">Địa chỉ</h3>
+
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <Label htmlFor="province">Tỉnh/Thành phố *</Label>
+                                    <Select value={formData.province} onValueChange={(value) => setFormData(prev => ({ ...prev, province: value }))}>
                                         <SelectTrigger className="mt-2">
-                                            <SelectValue placeholder="Chọn quốc tịch" />
+                                            <SelectValue placeholder="Chọn tỉnh/thành phố" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {countries.map((country) => (
-                                                <SelectItem key={country} value={country}>{country}</SelectItem>
+                                            {vietnamProvinces.map((province) => (
+                                                <SelectItem key={province} value={province}>{province}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
-                            </div>
 
-                            {/* Address Information */}
-                            <div className="space-y-6">
-                                <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-2">Địa chỉ</h3>
-
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div>
-                                        <Label htmlFor="province">Tỉnh/Thành phố *</Label>
-                                        <Select value={formData.province} onValueChange={(value) => setFormData(prev => ({ ...prev, province: value }))}>
-                                            <SelectTrigger className="mt-2">
-                                                <SelectValue placeholder="Chọn tỉnh/thành phố" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {vietnamProvinces.map((province) => (
-                                                    <SelectItem key={province} value={province}>{province}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="district">Quận/Huyện *</Label>
-                                        <Input
-                                            id="district"
-                                            value={formData.district}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, district: e.target.value }))}
-                                            placeholder="Nhập quận/huyện"
-                                            className="mt-2"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Account Information */}
-                            <div className="space-y-6">
-                                <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-2">Thông tin tài khoản</h3>
-
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div>
-                                        <Label htmlFor="email">Email</Label>
-                                        <Input
-                                            id="email"
-                                            value={formData.email}
-                                            readOnly
-                                            className="mt-2 bg-gray-50"
-                                        />
-                                        <p className="text-sm text-gray-500 mt-1">Email không thể thay đổi</p>
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="username">Tên người dùng</Label>
-                                        <Input
-                                            id="username"
-                                            value={formData.username}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                                            className="mt-2 bg-gray-50"
-                                        />
-
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Password Change */}
-                            <div className="space-y-6">
-                                <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-2">Bảo mật</h3>
-
-                                <div className="flex items-center space-x-2">
-                                    <Switch
-                                        id="changePassword"
-                                        checked={formData.changePassword}
-                                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, changePassword: checked }))}
+                                <div>
+                                    <Label htmlFor="district">Quận/Huyện *</Label>
+                                    <Input
+                                        id="district"
+                                        value={formData.district}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, district: e.target.value }))}
+                                        placeholder="Nhập quận/huyện"
+                                        className="mt-2"
                                     />
-                                    <Label htmlFor="changePassword">Thay đổi mật khẩu</Label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Account Information */}
+                        <div className="space-y-6">
+                            <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-2">Thông tin tài khoản</h3>
+
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input
+                                        id="email"
+                                        value={formData.email}
+                                        readOnly
+                                        className="mt-2 bg-gray-50"
+                                    />
+                                    <p className="text-sm text-gray-500 mt-1">Email không thể thay đổi</p>
                                 </div>
 
-                                {formData.changePassword && (
-                                    <div className="grid gap-6 mt-4">
-                                        {/* Mật khẩu hiện tại  */}
-                                        <div className="md:col-span-2">
-                                            <Label htmlFor="currentPassword">Mật khẩu hiện tại *</Label>
+                                <div>
+                                    <Label htmlFor="username">Tên người dùng</Label>
+                                    <Input
+                                        id="username"
+                                        value={formData.username}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                                        className="mt-2 bg-gray-50"
+                                    />
+
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Password Change */}
+                        <div className="space-y-6">
+                            <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-2">Bảo mật</h3>
+
+                            <div className="flex items-center space-x-2">
+                                <Switch
+                                    id="changePassword"
+                                    checked={formData.changePassword}
+                                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, changePassword: checked }))}
+                                />
+                                <Label htmlFor="changePassword">Thay đổi mật khẩu</Label>
+                            </div>
+
+                            {formData.changePassword && (
+                                <div className="grid gap-6 mt-4">
+                                    {/* Mật khẩu hiện tại  */}
+                                    <div className="md:col-span-2">
+                                        <Label htmlFor="currentPassword">Mật khẩu hiện tại *</Label>
+                                        <div className="relative mt-2">
+                                            <Input
+                                                id="currentPassword"
+                                                type={showCurrentPassword ? "text" : "password"}
+                                                value={formData.currentPassword}
+                                                onChange={(e) =>
+                                                    setFormData((prev) => ({
+                                                        ...prev,
+                                                        currentPassword: e.target.value,
+                                                    }))
+                                                }
+                                                placeholder="Nhập mật khẩu hiện tại"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                                            >
+                                                {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Mật khẩu mới và nhập lại - chung 1 hàng */}
+                                    <div className="grid md:grid-cols-1 gap-5 mt-4">
+                                        {/* Mật khẩu mới */}
+                                        <div>
+                                            <Label htmlFor="newPassword">Mật khẩu mới *</Label>
                                             <div className="relative mt-2">
                                                 <Input
-                                                    id="currentPassword"
-                                                    type={showCurrentPassword ? "text" : "password"}
-                                                    value={formData.currentPassword}
+                                                    id="newPassword"
+                                                    type={showNewPassword ? "text" : "password"}
+                                                    value={formData.newPassword}
                                                     onChange={(e) =>
-                                                        setFormData((prev) => ({
-                                                            ...prev,
-                                                            currentPassword: e.target.value,
-                                                        }))
+                                                        setFormData((prev) => ({ ...prev, newPassword: e.target.value }))
                                                     }
-                                                    placeholder="Nhập mật khẩu hiện tại"
+                                                    placeholder="Nhập mật khẩu mới"
                                                 />
                                                 <button
                                                     type="button"
-                                                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                    onClick={() => setShowNewPassword(!showNewPassword)}
                                                     className="absolute right-3 top-1/2 transform -translate-y-1/2"
                                                 >
-                                                    {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                                 </button>
                                             </div>
                                         </div>
 
-                                        {/* Mật khẩu mới và nhập lại - chung 1 hàng */}
-                                        <div className="grid md:grid-cols-1 gap-5 mt-4">
-                                            {/* Mật khẩu mới */}
-                                            <div>
-                                                <Label htmlFor="newPassword">Mật khẩu mới *</Label>
-                                                <div className="relative mt-2">
-                                                    <Input
-                                                        id="newPassword"
-                                                        type={showNewPassword ? "text" : "password"}
-                                                        value={formData.newPassword}
-                                                        onChange={(e) =>
-                                                            setFormData((prev) => ({ ...prev, newPassword: e.target.value }))
-                                                        }
-                                                        placeholder="Nhập mật khẩu mới"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowNewPassword(!showNewPassword)}
-                                                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                                                    >
-                                                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            {/* Nhập lại mật khẩu mới */}
-                                            <div>
-                                                <Label htmlFor="confirmPassword">Nhập lại mật khẩu mới *</Label>
-                                                <div className="relative mt-2">
-                                                    <Input
-                                                        id="confirmPassword"
-                                                        type={showConfirmPassword ? "text" : "password"}
-                                                        value={formData.confirmPassword}
-                                                        onChange={(e) =>
-                                                            setFormData((prev) => ({
-                                                                ...prev,
-                                                                confirmPassword: e.target.value,
-                                                            }))
-                                                        }
-                                                        placeholder="Nhập lại mật khẩu mới"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                                                    >
-                                                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                    </button>
-                                                </div>
-                                                {formData.newPassword &&
-                                                    formData.confirmPassword &&
-                                                    formData.newPassword !== formData.confirmPassword && (
-                                                        <p className="text-red-500 text-sm mt-1">Mật khẩu không khớp</p>
-                                                    )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="flex items-center justify-between p-4 border rounded-lg">
-                                    <div className="flex items-center space-x-3">
-                                        <Shield className="w-5 h-5 text-blue-600" />
+                                        {/* Nhập lại mật khẩu mới */}
                                         <div>
-                                            <Label htmlFor="twoFactorAuth">Xác thực 2 bước (2FA)</Label>
-                                            <p className="text-sm text-gray-500">Tăng cường bảo mật tài khoản</p>
+                                            <Label htmlFor="confirmPassword">Nhập lại mật khẩu mới *</Label>
+                                            <div className="relative mt-2">
+                                                <Input
+                                                    id="confirmPassword"
+                                                    type={showConfirmPassword ? "text" : "password"}
+                                                    value={formData.confirmPassword}
+                                                    onChange={(e) =>
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            confirmPassword: e.target.value,
+                                                        }))
+                                                    }
+                                                    placeholder="Nhập lại mật khẩu mới"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                                                >
+                                                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                </button>
+                                            </div>
+                                            {formData.newPassword &&
+                                                formData.confirmPassword &&
+                                                formData.newPassword !== formData.confirmPassword && (
+                                                    <p className="text-red-500 text-sm mt-1">Mật khẩu không khớp</p>
+                                                )}
                                         </div>
-                                    </div>
-                                    <div className="flex items-center space-x-3">
-                                        <Switch
-                                            id="twoFactorAuth"
-                                            checked={formData.twoFactorAuth}
-                                            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, twoFactorAuth: checked }))}
-                                        />
-                                        {formData.twoFactorAuth && (
-                                            <Button variant="outline" size="sm">
-                                                <Smartphone className="w-4 h-4 mr-2" />
-                                                Thiết lập
-                                            </Button>
-                                        )}
                                     </div>
                                 </div>
+                            )}
+
+                            <div className="flex items-center justify-between p-4 border rounded-lg">
+                                <div className="flex items-center space-x-3">
+                                    <Shield className="w-5 h-5 text-blue-600" />
+                                    <div>
+                                        <Label htmlFor="twoFactorAuth">Xác thực 2 bước (2FA)</Label>
+                                        <p className="text-sm text-gray-500">Tăng cường bảo mật tài khoản</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                    <Switch
+                                        id="twoFactorAuth"
+                                        checked={formData.twoFactorAuth}
+                                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, twoFactorAuth: checked }))}
+                                    />
+                                    {formData.twoFactorAuth && (
+                                        <Button variant="outline" size="sm">
+                                            <Smartphone className="w-4 h-4 mr-2" />
+                                            Thiết lập
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
+                        </div>
 
-                            {/* Language Settings */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Globe className="w-5 h-5" />
-                                        Ngôn ngữ giao diện
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Chọn ngôn ngữ hiển thị cho ứng dụng
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Select value={settings.language} onValueChange={(value) => setSettings(prev => ({ ...prev, language: value }))}>
-                                        <SelectTrigger className="w-full max-w-xs">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {languages.map((lang) => (
-                                                <SelectItem key={lang.value} value={lang.value}>
-                                                    <div className="flex items-center gap-2">
-                                                        <span>{lang.flag}</span>
-                                                        <span>{lang.label}</span>
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </CardContent>
-                            </Card>
-
-                            {/* Theme Settings */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Palette className="w-5 h-5" />
-                                        Giao diện
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Tùy chỉnh chế độ hiển thị sáng/tối
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <RadioGroup
-                                        value={settings.theme}
-                                        onValueChange={(value) => setSettings(prev => ({ ...prev, theme: value }))}
-                                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
-                                    >
-                                        {themes.map((theme) => {
-                                            const Icon = theme.icon;
-                                            return (
-                                                <div key={theme.value} className="relative">
-                                                    <RadioGroupItem
-                                                        value={theme.value}
-                                                        id={theme.value}
-                                                        className="peer sr-only"
-                                                    />
-                                                    <Label
-                                                        htmlFor={theme.value}
-                                                        className={cn(
-                                                            "flex flex-col items-center gap-2 rounded-lg border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-all",
-                                                            settings.theme === theme.value && "border-primary bg-accent"
-                                                        )}
-                                                    >
-                                                        <Icon className="w-6 h-6" />
-                                                        <span className="font-medium">{theme.label}</span>
-                                                    </Label>
+                        {/* Language Settings */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Globe className="w-5 h-5" />
+                                    Ngôn ngữ giao diện
+                                </CardTitle>
+                                <CardDescription>
+                                    Chọn ngôn ngữ hiển thị cho ứng dụng
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Select value={settings.language} onValueChange={(value) => setSettings(prev => ({ ...prev, language: value }))}>
+                                    <SelectTrigger className="w-full max-w-xs">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {languages.map((lang) => (
+                                            <SelectItem key={lang.value} value={lang.value}>
+                                                <div className="flex items-center gap-2">
+                                                    <span>{lang.flag}</span>
+                                                    <span>{lang.label}</span>
                                                 </div>
-                                            );
-                                        })}
-                                    </RadioGroup>
-                                </CardContent>
-                            </Card>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </CardContent>
+                        </Card>
 
-                            {/* Save Button */}
-                            <div className="flex justify-center pt-6">
-                                <Button
-                                    onClick={handleSave}
-                                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-lg"
-                                    size="lg"
+                        {/* Theme Settings */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Palette className="w-5 h-5" />
+                                    Giao diện
+                                </CardTitle>
+                                <CardDescription>
+                                    Tùy chỉnh chế độ hiển thị sáng/tối
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <RadioGroup
+                                    value={settings.theme}
+                                    onValueChange={(value) => setSettings(prev => ({ ...prev, theme: value }))}
+                                    className="grid grid-cols-1 md:grid-cols-3 gap-4"
                                 >
-                                    <Save className="w-5 h-5 mr-2" />
-                                    Lưu thay đổi
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                                    {themes.map((theme) => {
+                                        const Icon = theme.icon;
+                                        return (
+                                            <div key={theme.value} className="relative">
+                                                <RadioGroupItem
+                                                    value={theme.value}
+                                                    id={theme.value}
+                                                    className="peer sr-only"
+                                                />
+                                                <Label
+                                                    htmlFor={theme.value}
+                                                    className={cn(
+                                                        "flex flex-col items-center gap-2 rounded-lg border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-all",
+                                                        settings.theme === theme.value && "border-primary bg-accent"
+                                                    )}
+                                                >
+                                                    <Icon className="w-6 h-6" />
+                                                    <span className="font-medium">{theme.label}</span>
+                                                </Label>
+                                            </div>
+                                        );
+                                    })}
+                                </RadioGroup>
+                            </CardContent>
+                        </Card>
+
+                        {/* Save Button */}
+                        <div className="flex justify-center pt-6">
+                            <Button
+                                onClick={handleSave}
+                                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-lg"
+                                size="lg"
+                            >
+                                <Save className="w-5 h-5 mr-2" />
+                                Lưu thay đổi
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </Layout>
 
