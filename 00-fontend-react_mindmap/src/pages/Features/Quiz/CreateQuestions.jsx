@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
     Dialog,
     DialogClose,
@@ -49,6 +48,8 @@ import {
     Sparkles,
     File,
     Image,
+    SwitchCamera,
+    Minus
 } from "lucide-react";
 import axios from "@/utils/axios.customize";
 import { toast } from 'react-toastify';
@@ -60,11 +61,21 @@ export default function CreateQuestions() {
     const [editingFolder, setEditingFolder] = useState(null);
     const [uploadedContent, setUploadedContent] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
-    // const [open, setOpen] = useState(false);
+    const [mode, setMode] = useState("upload"); // "upload" | "text"
+    const [modeQuiz, setModeQuiz] = useState("manual"); // "manual" | "ai"
+    const fileInputRef = useRef(null);
     const [loading, setLoading] = useState(false);
+    const [selectedFileName, setSelectedFileName] = useState("");
 
+    // Tạo Quiz AI 
     const [foldersQuiz, setFoldersQuiz] = useState([]);
-    const [questions, setQuestions] = useState([]);
+    const [questions, setQuestions] = useState([
+        {
+            question: "",
+            options: ["", "", "", ""],
+            correctIndex: 1,
+        },
+    ]);
 
     const filteredFolders = foldersQuiz.filter((folder) =>
         folder.name.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -158,8 +169,64 @@ export default function CreateQuestions() {
         }
     };
 
-    const handleGenerateQuestions = async () => {
+
+    const handleFileSelect = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setSelectedFileName(file.name); // 👉 lưu tên file để hiển thị
+        // TODO: upload file or preview content
+        console.log("Selected file:", file);
     };
+
+    const handleGenerateQuestions = () => {
+        setIsGenerating(true);
+        // TODO: call API to generate questions
+        setTimeout(() => setIsGenerating(false), 2000);
+    };
+
+    // Tạo Quiz thủ công 
+    const handleChangeQuestion = (index, value) => {
+        const newQuestions = [...questions];
+        newQuestions[index].question = value;
+        setQuestions(newQuestions);
+    };
+
+    const handleChangeOption = (qIndex, optIndex, value) => {
+        const newQuestions = [...questions];
+        newQuestions[qIndex].options[optIndex] = value;
+        setQuestions(newQuestions);
+    };
+
+    const handleSelectCorrect = (qIndex, optIndex) => {
+        const newQuestions = [...questions];
+        newQuestions[qIndex].correctIndex = optIndex;
+        setQuestions(newQuestions);
+    };
+
+    const addQuestion = () => {
+        setQuestions([
+            ...questions,
+            {
+                question: "",
+                options: ["", "", "", ""],
+                correctIndex: null,
+            },
+        ]);
+    };
+
+    const removeQuestion = (index) => {
+        const newQuestions = [...questions];
+        newQuestions.splice(index, 1);
+        setQuestions(newQuestions);
+    };
+
+    const handleSubmitAll = () => {
+        console.log("Generated Questions:", questions);
+        // Call backend API here if needed
+    };
+
+
 
     useEffect(() => {
         fetchFoldersQuiz();
@@ -176,17 +243,101 @@ export default function CreateQuestions() {
                                 <ArrowLeft className="w-4 h-4 mr-2" />
                                 Quay lại
                             </Button>
-                            <div>
+                            <div className="flex gap-10">
                                 <h1 className="text-2xl font-bold text-gray-900">
                                     {selectedFolder.name}
                                 </h1>
-                                <p className="text-gray-600">{questions.length} câu hỏi</p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="grid lg:grid-cols-2 gap-8">
-                        {/* Content Upload Section */}
+                    <div className="flex justify-center mb-6">
+                        <Button
+                            variant={modeQuiz === "manual" ? "default" : "outline"}
+                            onClick={() => setModeQuiz("manual")}
+                            className="mr-2"
+                        >
+                            ✍️ Thủ công
+                        </Button>
+                        <Button
+                            variant={modeQuiz === "ai" ? "default" : "outline"}
+                            onClick={() => setModeQuiz("ai")}
+                        >
+                            🤖 Tự động (AI)
+                        </Button>
+                    </div>
+                    {modeQuiz === "manual" ? (
+                        // Tao thủ công 
+                        <Card className="bg-white/80 shadow-xl backdrop-blur rounded-2xl p-6 space-y-6">
+                            <CardHeader>
+                                <CardTitle className="text-lg font-bold text-indigo-700">
+                                    ✍️ Tạo Quiz Thủ Công
+                                </CardTitle>
+                                <CardDescription>
+                                    Nhập câu hỏi và lựa chọn, đánh dấu đáp án đúng, sau đó nhấn "Tạo tất cả"
+                                </CardDescription>
+                            </CardHeader>
+
+                            {questions.map((q, qIndex) => (
+                                <div
+                                    key={qIndex}
+                                    className="border border-gray-300 rounded-lg p-4 bg-white/90 space-y-4"
+                                >
+                                    <div className="flex justify-between items-center">
+                                        <Input
+                                            placeholder={`Câu hỏi ${qIndex + 1}`}
+                                            value={q.question}
+                                            onChange={(e) => handleChangeQuestion(qIndex, e.target.value)}
+                                        />
+                                        {questions.length > 1 && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-red-600 hover:text-red-700 ml-4"
+                                                onClick={() => removeQuestion(qIndex)}
+                                            >
+                                                <Minus className="w-4 h-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {q.options.map((opt, optIndex) => (
+                                            <div key={optIndex} className="flex items-center space-x-2">
+                                                <Button
+                                                    size="icon"
+                                                    variant={q.correctIndex === optIndex ? "default" : "outline"}
+                                                    onClick={() => handleSelectCorrect(qIndex, optIndex)}
+                                                >
+                                                    {q.correctIndex === optIndex ? (
+                                                        <Check className="w-4 h-4 text-white" />
+                                                    ) : (
+                                                        <X className="w-4 h-4 text-red-500" />
+                                                    )}
+                                                </Button>
+                                                <Input
+                                                    placeholder={`Đáp án ${String.fromCharCode(65 + optIndex)}`}
+                                                    value={opt}
+                                                    onChange={(e) => handleChangeOption(qIndex, optIndex, e.target.value)}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+
+                            <div className="flex justify-between items-center">
+                                <Button variant="secondary" onClick={addQuestion}>
+                                    <Plus className="w-4 h-4 mr-2" /> Thêm câu hỏi
+                                </Button>
+
+                                <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleSubmitAll}>
+                                    Tạo tất cả
+                                </Button>
+                            </div>
+                        </Card>
+                    ) : (
+                        // Tạo bằng AI
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center">
@@ -197,46 +348,67 @@ export default function CreateQuestions() {
                                     Upload PDF, DOC, hình ảnh hoặc nhập nội dung để tạo câu hỏi
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer">
-                                    <div className="space-y-2">
-                                        <div className="flex justify-center space-x-2">
-                                            <File className="w-8 h-8 text-gray-400" />
-                                            <Image className="w-8 h-8 text-gray-400" />
+                            {/* Upload file or text  */}
+                            <div className="space-y-6">
+                                <div className="flex justify-center">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setMode(mode === "upload" ? "text" : "upload")}
+                                    >
+                                        <SwitchCamera className="w-4 h-4 mr-2" />
+                                        {mode === "upload" ? "Nhập nội dung thủ công" : "Tải tệp từ máy"}
+                                    </Button>
+                                </div>
+
+                                {mode === "upload" ? (
+                                    <>
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept=".pdf,.doc,.docx,.jpg,.png"
+                                            className="hidden"
+                                            onChange={handleFileSelect}
+                                        />
+                                        <div
+                                            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            <div className="space-y-2">
+                                                <div className="flex justify-center space-x-2">
+                                                    <File className="w-8 h-8 text-gray-400" />
+                                                    <Image className="w-8 h-8 text-gray-400" />
+                                                </div>
+                                                <p className="text-gray-600">Kéo thả file hoặc click để chọn</p>
+                                                <p className="text-sm text-gray-500">
+                                                    PDF, DOC, JPG, PNG (Max 10MB)
+                                                </p>
+                                            </div>
                                         </div>
-                                        <p className="text-gray-600">
-                                            Kéo thả file hoặc click để chọn
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            PDF, DOC, JPG, PNG (Max 10MB)
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="relative">
-                                    <Separator className="my-4" />
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="bg-white px-2 text-sm text-gray-500">
-                                            hoặc
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="content">Nhập nội dung</Label>
-                                    <Textarea
-                                        id="content"
-                                        placeholder="Paste nội dung tài liệu vào đây để AI tạo câu hỏi..."
-                                        value={uploadedContent}
-                                        onChange={(e) => setUploadedContent(e.target.value)}
-                                        rows={8}
-                                    />
-                                </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="content" className="text-xl font-semibold text-center w-full block">Nhập nội dung</Label>
+                                            <Textarea
+                                                id="content"
+                                                placeholder="Paste nội dung tài liệu vào đây để AI tạo câu hỏi..."
+                                                value={uploadedContent}
+                                                onChange={(e) => setUploadedContent(e.target.value)}
+                                                rows={8}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                                {selectedFileName && (
+                                    <p className="text-sm text-blue-600 font-medium mt-2">
+                                        📄 Đã chọn: {selectedFileName}
+                                    </p>
+                                )}
 
                                 <Button
                                     className="w-full"
                                     onClick={handleGenerateQuestions}
-                                    disabled={!uploadedContent.trim() || isGenerating}
+                                    disabled={mode === "text" && !uploadedContent.trim() || isGenerating}
                                 >
                                     {isGenerating ? (
                                         <>
@@ -250,95 +422,96 @@ export default function CreateQuestions() {
                                         </>
                                     )}
                                 </Button>
-                            </CardContent>
+                            </div>
                         </Card>
+                    )}
 
-                        {/* Questions List */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center">
-                                    <FileText className="w-5 h-5 mr-2" />
-                                    Danh Sách Câu Hỏi
-                                </CardTitle>
-                                <CardDescription>
-                                    Các câu hỏi đã được tạo cho thư mục này
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4 max-h-96 overflow-y-auto">
-                                    {questions.map((question) => (
-                                        <div
-                                            key={question.id}
-                                            className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                                        >
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <p className="font-medium text-gray-900 mb-2">
-                                                        {question.question}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600 mb-3">
-                                                        Đáp án: {question.answer}
-                                                    </p>
-                                                    <div className="flex items-center space-x-2">
-                                                        <Badge
-                                                            variant={
-                                                                question.type === "multiple-choice"
-                                                                    ? "default"
-                                                                    : "secondary"
-                                                            }
-                                                        >
-                                                            {question.type === "multiple-choice"
-                                                                ? "Trắc nghiệm"
-                                                                : "Tự luận"}
-                                                        </Badge>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={
-                                                                question.difficulty === "easy"
-                                                                    ? "border-green-500 text-green-700"
-                                                                    : question.difficulty === "medium"
-                                                                        ? "border-yellow-500 text-yellow-700"
-                                                                        : "border-red-500 text-red-700"
-                                                            }
-                                                        >
-                                                            {question.difficulty === "easy"
-                                                                ? "Dễ"
-                                                                : question.difficulty === "medium"
-                                                                    ? "Trung bình"
-                                                                    : "Khó"}
-                                                        </Badge>
-                                                    </div>
-                                                </div>
-                                                <div className="flex space-x-1 ml-4">
-                                                    <Button variant="ghost" size="sm">
-                                                        <Edit3 className="w-4 h-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="text-red-600 hover:text-red-700"
+                    {/* Questions List */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center">
+                                <FileText className="w-5 h-5 mr-2" />
+                                Danh Sách Câu Hỏi
+                            </CardTitle>
+                            <CardDescription>
+                                Các câu hỏi đã được tạo cho thư mục này
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4 max-h-96 overflow-y-auto">
+                                {questions.map((question) => (
+                                    <div
+                                        key={question.id}
+                                        className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <p className="font-medium text-gray-900 mb-2">
+                                                    {question.question}
+                                                </p>
+                                                <p className="text-sm text-gray-600 mb-3">
+                                                    Đáp án: {question.answer}
+                                                </p>
+                                                <div className="flex items-center space-x-2">
+                                                    <Badge
+                                                        variant={
+                                                            question.type === "multiple-choice"
+                                                                ? "default"
+                                                                : "secondary"
+                                                        }
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </Button>
+                                                        {question.type === "multiple-choice"
+                                                            ? "Trắc nghiệm"
+                                                            : "Tự luận"}
+                                                    </Badge>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className={
+                                                            question.difficulty === "easy"
+                                                                ? "border-green-500 text-green-700"
+                                                                : question.difficulty === "medium"
+                                                                    ? "border-yellow-500 text-yellow-700"
+                                                                    : "border-red-500 text-red-700"
+                                                        }
+                                                    >
+                                                        {question.difficulty === "easy"
+                                                            ? "Dễ"
+                                                            : question.difficulty === "medium"
+                                                                ? "Trung bình"
+                                                                : "Khó"}
+                                                    </Badge>
                                                 </div>
                                             </div>
+                                            <div className="flex space-x-1 ml-4">
+                                                <Button variant="ghost" size="sm">
+                                                    <Edit3 className="w-4 h-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-red-600 hover:text-red-700"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
                                         </div>
-                                    ))}
-                                    {questions.length === 0 && (
-                                        <div className="text-center py-8 text-gray-500">
-                                            <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                                            <p>Chưa có câu hỏi nào</p>
-                                            <p className="text-sm">
-                                                Upload tài liệu để bắt đầu tạo câu hỏi
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
+                                    </div>
+                                ))}
+                                {questions.length === 0 && (
+                                    <div className="text-center py-8 text-gray-500">
+                                        <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                                        <p>Chưa có câu hỏi nào</p>
+                                        <p className="text-sm">
+                                            Upload tài liệu để bắt đầu tạo câu hỏi
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+
                 </div>
-            </Layout>
+            </Layout >
         );
     }
 
