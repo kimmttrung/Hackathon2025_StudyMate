@@ -112,7 +112,7 @@ const navigationMap = {
     },
 };
 
-export default function Layout({ children }) {
+export default function Layout({ children, fullWidth }) {
     const { auth, setAuth } = useContext(AuthContext);
     const location = useLocation();
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -127,7 +127,7 @@ export default function Layout({ children }) {
 
     const currentModule = getCurrentModule();
     const isHome = location.pathname === navigationMap[currentModule]?.basePath;
-    const title = navigationMap[currentModule]?.title || "Settings MickeAI";
+    const title = navigationMap[currentModule]?.title || "MickeAI";
     const subtitle = isHome ? navigationMap[currentModule]?.subtitle : "";
     const menuItems = navigationMap[currentModule]?.menu || [];
     const backLink = navigationMap[currentModule]?.basePath || "/user/settings  ";
@@ -391,8 +391,9 @@ export default function Layout({ children }) {
 
             </header>
 
-            {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main
+                className={`${fullWidth ? "w-full" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"}`}
+            >
                 {children}
             </main>
         </div>

@@ -1,8 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-    Home, FileText, Image, Layers, ClipboardList, Users,
-    ShieldCheck, UploadCloud, Settings, BrainCircuit, BookOpen, Menu as MenuIcon
-} from "lucide-react";
+import { ClipboardList, Layers, BookOpen, History, MessageSquare, MessageCircle, BarChart2, ShieldCheck, MenuIcon, Home, Settings } from "lucide-react";
 import { useState } from "react";
 
 const Sidebar = () => {
@@ -39,29 +36,35 @@ const Sidebar = () => {
                     <SidebarItem icon={<ClipboardList className="w-5 h-5" />} label="Flashcards" to="/user/flashcards" active={isActive("/user/flashcards")} collapsed={collapsed} />
                     <SidebarItem icon={<Layers className="w-5 h-5" />} label="Mindmaps" to="/user/mindmaps" active={isActive("/user/mindmaps")} collapsed={collapsed} />
                     <SidebarItem icon={<BookOpen className="w-5 h-5" />} label="Quiz Generator" to="/user/quizs" active={isActive("/user/quizs")} collapsed={collapsed} />
+                    <SidebarItem
+                        icon={<History className="w-5 h-5" />}
+                        label="History"
+                        to="/user/history"
+                        active={isActive("/user/history")}
+                        collapsed={collapsed}
+                    />
+                    <SidebarItem
+                        icon={<MessageSquare className="w-5 h-5" />}
+                        label="Discussion"
+                        to="/user/discussions"
+                        active={isActive("/user/discussions")}
+                        collapsed={collapsed}
+                    />
+                    <SidebarItem
+                        icon={<MessageCircle className="w-5 h-5" />}
+                        label="Chat"
+                        to="/user/chat"
+                        active={isActive("/user/chat")}
+                        collapsed={collapsed}
+                    />
+                    <SidebarItem
+                        icon={<BarChart2 className="w-5 h-5" />}
+                        label="Leaderboard"
+                        to="/user/leaderboard"
+                        active={isActive("/user/leaderboard")}
+                        collapsed={collapsed}
+                    />
                 </SidebarSection>
-                {/* <SidebarSection title=" Management" collapsed={collapsed}>
-                    <SidebarItem
-                        icon={<Users className="w-5 h-5" />}
-                        label="Manage Users" to="/user/manage-users"
-                        active={isActive("/user/manage-users")}
-                        collapsed={collapsed}
-                    />
-                    <SidebarItem
-                        icon={<UploadCloud className="w-5 h-5" />}
-                        label="Input"
-                        to="/user/input-upload"
-                        active={isActive("/user/input-upload")}
-                        collapsed={collapsed}
-                    />
-                    <SidebarItem
-                        icon={<BrainCircuit className="w-5 h-5" />}
-                        label="Output"
-                        to="/user/generated-content"
-                        active={isActive("/user/generated-content")}
-                        collapsed={collapsed}
-                    />
-                </SidebarSection> */}
                 <SidebarSection title="" collapsed={collapsed}>
                     <SidebarItem icon={<Settings className="w-5 h-5" />} label="Settings" to="/user/settings" active={isActive("/user/settings")} collapsed={collapsed} />
                 </SidebarSection>

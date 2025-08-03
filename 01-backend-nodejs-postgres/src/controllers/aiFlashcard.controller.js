@@ -116,7 +116,7 @@ exports.handleFileUpload = async (req, res) => {
 
         const file = req.file;
         const count = parseInt(req.body.cardCount) || 10;
-        console.log("Card count request:", req.body.cardCount);
+        // console.log("Card count request:", req.body.cardCount);
         const folder_id = req.body.folder_id; // 👈 phải truyền từ FE
 
         if (!file) return res.status(400).json({ error: "Chưa có file." });
@@ -143,7 +143,7 @@ exports.handleFileUpload = async (req, res) => {
             folder_id
         }));
 
-        console.log("check aiFlashcards", aiFlashcards);
+        // console.log("check aiFlashcards", aiFlashcards);
 
         // Cắt bớt nếu Gemini trả nhiều hơn yêu cầu
         const limitedFlashcards = aiFlashcards.slice(0, count);

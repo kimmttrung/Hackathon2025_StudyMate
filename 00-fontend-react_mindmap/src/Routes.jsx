@@ -26,6 +26,9 @@ import InputSettings from './pages/Settings/InputSettings';
 import AISettings from './pages/Settings/AISettings';
 import PlaceholderPage from './pages/Settings/PlaceholderPage';
 import UpgradePage from './pages/Settings/UpgradePage';
+import Discussion from './pages/Features/External/Discussion';
+import Chat from './pages/Features/External/Chat';
+import Leaderboard from './pages/Features/External/Leaderboard';
 
 const AppRoutes = () => {
   return (
@@ -61,6 +64,10 @@ const AppRoutes = () => {
           <Route path="settings/integrations" element={<PlaceholderPage />} />
           <Route path="settings/notifications" element={<PlaceholderPage />} />
           <Route path="settings/upgrade" element={<UpgradePage />} />
+
+          <Route path="discussions" element={<Discussion />} />
+          <Route path="chat" element={<Chat />} />
+          <Route path="leaderboard" element={<Leaderboard />} />
 
         </Route>
         <Route path="*" element={<NotFound />} />
