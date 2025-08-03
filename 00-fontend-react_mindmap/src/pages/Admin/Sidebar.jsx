@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { ClipboardList, Layers, BookOpen, History, MessageSquare, MessageCircle, BarChart2, ShieldCheck, MenuIcon, Home, Settings } from "lucide-react";
+import { ClipboardList, Layers, BookOpen, History, MessageSquare, MessageCircle, BarChart2, ShieldCheck, MenuIcon, Home, Settings, Users } from "lucide-react";
 import { useState } from "react";
 
 const Sidebar = () => {
@@ -51,6 +51,13 @@ const Sidebar = () => {
                         collapsed={collapsed}
                     />
                     <SidebarItem
+                        icon={<Users className="w-5 h-5" />}          // Icon người dùng
+                        label="Add friend"
+                        to="/user/friends"
+                        active={isActive("/user/friends")}
+                        collapsed={collapsed}
+                    />
+                    <SidebarItem
                         icon={<MessageCircle className="w-5 h-5" />}
                         label="Chat"
                         to="/user/chat"
@@ -64,6 +71,7 @@ const Sidebar = () => {
                         active={isActive("/user/leaderboard")}
                         collapsed={collapsed}
                     />
+
                 </SidebarSection>
                 <SidebarSection title="" collapsed={collapsed}>
                     <SidebarItem icon={<Settings className="w-5 h-5" />} label="Settings" to="/user/settings" active={isActive("/user/settings")} collapsed={collapsed} />

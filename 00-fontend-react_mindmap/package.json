@@ -31,6 +31,7 @@
     "date-fns": "^4.1.0",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.510.0",
+    "marked": "^16.1.1",
     "mickeai": "file:",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",

@@ -167,7 +167,7 @@ export default function Discussion() {
                             Chia sẻ kiến thức và cùng nhau học hỏi
                         </p>
                     </div>
-                    <Link to="/thao-luan/tao-bai-viet">
+                    <Link to="/user/discussions/create">
                         <Button className="bg-blue-600 hover:bg-blue-700">
                             <Plus className="w-4 h-4 mr-2" />
                             Tạo bài viết

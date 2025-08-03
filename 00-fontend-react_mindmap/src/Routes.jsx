@@ -7,7 +7,6 @@ import FlashcardApp from './pages/Features/Flascard/Index';
 import CreateFlascard from './pages/Features/Flascard/CreateFlascard';
 import StudyFlascard from './pages/Features/Flascard/StudyFlascard';
 import PracticeTest from './pages/Features/Flascard/PracticeTest';
-import ReviewFlascard from './pages/Features/Flascard/FlashcardGame';
 import User from './pages/User/User';
 import DashboardUser from './pages/User/DashboardUser';
 import { ToastContainer } from 'react-toastify';
@@ -26,9 +25,11 @@ import InputSettings from './pages/Settings/InputSettings';
 import AISettings from './pages/Settings/AISettings';
 import PlaceholderPage from './pages/Settings/PlaceholderPage';
 import UpgradePage from './pages/Settings/UpgradePage';
-import Discussion from './pages/Features/External/Discussion';
+import Discussion from './pages/Features/Discussion/DiscussionPage';
 import Chat from './pages/Features/External/Chat';
 import Leaderboard from './pages/Features/External/Leaderboard';
+import CreateDiscussion from './pages/Features/Discussion/CreateDiscussion';
+import AddFriend from './pages/Features/External/AddFriend';
 
 const AppRoutes = () => {
   return (
@@ -66,8 +67,12 @@ const AppRoutes = () => {
           <Route path="settings/upgrade" element={<UpgradePage />} />
 
           <Route path="discussions" element={<Discussion />} />
+          <Route path="discussions/create" element={<CreateDiscussion />} />
+
           <Route path="chat" element={<Chat />} />
+          <Route path="friends" element={<AddFriend />} />
           <Route path="leaderboard" element={<Leaderboard />} />
+
 
         </Route>
         <Route path="*" element={<NotFound />} />

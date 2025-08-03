@@ -122,6 +122,7 @@ export default function Layout({ children, fullWidth }) {
         if (location.pathname.includes("/user/flashcards")) return "flashcards";
         if (location.pathname.includes("/user/quiz")) return "quiz";
         if (location.pathname.includes("/user/mindmaps")) return "mindmaps";
+        if (location.pathname.includes("/user/discussions")) return "discussions";
         return null;
     };
 
@@ -130,7 +131,7 @@ export default function Layout({ children, fullWidth }) {
     const title = navigationMap[currentModule]?.title || "MickeAI";
     const subtitle = isHome ? navigationMap[currentModule]?.subtitle : "";
     const menuItems = navigationMap[currentModule]?.menu || [];
-    const backLink = navigationMap[currentModule]?.basePath || "/user/settings  ";
+    const backLink = navigationMap[currentModule]?.basePath || "/user/settings";
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [notifications, setNotifications] = useState([
         {
@@ -205,7 +206,8 @@ export default function Layout({ children, fullWidth }) {
                             ) : (
                                 <Button
                                     variant="ghost"
-                                    onClick={() => navigate(backLink)}
+                                    // onClick={() => navigate(backLink)}
+                                    onClick={() => navigate(-1)}
                                     className="flex items-center gap-2 text-sm text-gray-700 hover:text-black"
                                 >
                                     <ArrowLeft className="w-5 h-5" />
