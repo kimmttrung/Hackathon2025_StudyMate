@@ -5,7 +5,7 @@ const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const quizModel = require("../models/quizModel");
-const folderQuizModel = require("../models/folderQuizModel");
+// const { insertQuiz, updateFolderQuizCount } = require("../models/quizModel");
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
@@ -98,16 +98,26 @@ exports.generateQuizFromText = async (req, res) => {
         const saved = [];
 
         for (const q of quizzes) {
+            const index = q.choices.findIndex(
+                (choice) => choice.trim().toLowerCase() === q.answer.trim().toLowerCase()
+            );
+            const correct_option = ["a", "b", "c", "d"][index] || "a"; // fallback nếu không tìm thấy
+
             const inserted = await quizModel.insertQuiz({
                 folder_id,
-                question: q.question,
-                choices: q.choices,
-                answer: q.answer
+                question_text: q.question,
+                option_a: q.choices[0],
+                option_b: q.choices[1],
+                option_c: q.choices[2],
+                option_d: q.choices[3],
+                correct_option,
+                explanation: null,
             });
+
             saved.push(inserted);
         }
 
-        await folderQuizModel.updateQuizCount(folder_id);
+        await quizModel.updateFolderQuizCount(folder_id);
         res.status(200).json(saved);
     } catch (err) {
         console.error("❌ Lỗi AI Text Quiz:", err);
@@ -120,7 +130,7 @@ exports.generateQuizFromFile = async (req, res) => {
     try {
         const file = req.file;
         const folder_id = req.body.folder_id;
-        // const count = parseInt(req.body.count) || 10;
+        const count = parseInt(req.body.count) || 5;
 
         if (!file || !folder_id) return res.status(400).json({ error: "Thiếu file hoặc folder_id." });
 
@@ -139,16 +149,26 @@ exports.generateQuizFromFile = async (req, res) => {
         const saved = [];
 
         for (const q of quizzes) {
+            const index = q.choices.findIndex(
+                (choice) => choice.trim().toLowerCase() === q.answer.trim().toLowerCase()
+            );
+            const correct_option = ["a", "b", "c", "d"][index] || "a"; // fallback nếu không tìm thấy
+
             const inserted = await quizModel.insertQuiz({
                 folder_id,
-                question: q.question,
-                choices: q.choices,
-                answer: q.answer
+                question_text: q.question,
+                option_a: q.choices[0],
+                option_b: q.choices[1],
+                option_c: q.choices[2],
+                option_d: q.choices[3],
+                correct_option,
+                explanation: null,
             });
+
             saved.push(inserted);
         }
 
-        await folderQuizModel.updateQuizCount(folder_id);
+        await quizModel.updateFolderQuizCount(folder_id);
         res.status(200).json(saved);
     } catch (err) {
         console.error("❌ Lỗi AI File Quiz:", err);

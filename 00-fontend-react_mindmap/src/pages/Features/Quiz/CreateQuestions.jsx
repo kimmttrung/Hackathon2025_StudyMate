@@ -61,13 +61,9 @@ export default function CreateQuestions() {
     const [searchTerm, setSearchTerm] = useState("");
     const [newFolderName, setNewFolderName] = useState("");
     const [editingFolder, setEditingFolder] = useState(null);
-    const [uploadedContent, setUploadedContent] = useState("");
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [mode, setMode] = useState("upload"); // "upload" | "text"
     const [modeQuiz, setModeQuiz] = useState("manual"); // "manual" | "ai"
     const fileInputRef = useRef(null);
     const [loading, setLoading] = useState(false);
-    const [selectedFileName, setSelectedFileName] = useState("");
     const [foldersQuiz, setFoldersQuiz] = useState([]);
     const initialQuestion = {
         question_text: "",
@@ -90,7 +86,13 @@ export default function CreateQuestions() {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    // Tạo Quiz AI 
+    // Cretate quiz AI
+    const [quizCount, setQuizCount] = useState(5);
+    const [mode, setMode] = useState("upload"); // "upload" | "text"
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [selectedFileName, setSelectedFileName] = useState("");
+    const [uploadedContent, setUploadedContent] = useState("");
+    const [isGenerating, setIsGenerating] = useState(false);
 
     const filteredFolders = foldersQuiz.filter((folder) =>
         folder.name.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -183,23 +185,6 @@ export default function CreateQuestions() {
             toast.error("Lỗi khi xóa thư mục");
         }
     };
-
-
-    const handleFileSelect = (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        setSelectedFileName(file.name); // 👉 lưu tên file để hiển thị
-        // TODO: upload file or preview content
-        console.log("Selected file:", file);
-    };
-
-    const handleGenerateQuestions = () => {
-        setIsGenerating(true);
-        // TODO: call API to generate questions
-        setTimeout(() => setIsGenerating(false), 2000);
-    };
-
 
     // Tạo Quiz thủ công 
 
@@ -308,6 +293,75 @@ export default function CreateQuestions() {
             toast.error("❌ Có lỗi xảy ra khi gửi dữ liệu.");
         }
     };
+
+    // Tạo Quiz AI 
+
+    const handleFileSelect = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setSelectedFile(file);              // lưu file gốc
+        setSelectedFileName(file.name); // 👉 lưu tên file để hiển thị
+        // TODO: upload file or preview content
+        console.log("Selected file:", file);
+    };
+
+    const handleGenerateQuestions = async () => {
+        setIsGenerating(true);
+
+        try {
+            if (!selectedFolder?.id) {
+                toast.error("⚠️ Bạn cần chọn folder trước.");
+                return;
+            }
+
+            const formData = new FormData();
+            const count = quizCount || 5;
+
+            if (mode === "upload") {
+                if (!selectedFile) {
+                    toast.error("❌ Vui lòng chọn file hợp lệ.");
+                    return;
+                }
+
+                formData.append("file", selectedFile);
+                formData.append("folder_id", selectedFolder.id);
+                formData.append("count", count);
+
+                const res = await axios.post("/api/quiz/ai/upload", formData);
+                console.log("check res AI upload", res);
+                if (res.length > 0) {
+                    toast.success(`✅ Tạo ${res.length} câu hỏi từ file thành công.`);
+                    setSelectedFile(null);
+                    setSelectedFileName("");
+                }
+            } else {
+                if (!uploadedContent.trim()) {
+                    toast.error("❌ Vui lòng nhập nội dung văn bản.");
+                    return;
+                }
+
+                const res = await axios.post("/api/quiz/ai/text", {
+                    content: uploadedContent,
+                    count,
+                    folder_id: selectedFolder.id,
+                });
+                console.log("check res AI text", res);
+                if (res.length > 0) {
+                    toast.success(`✅ Tạo ${res.length} câu hỏi từ văn bản thành công.`);
+                    setUploadedContent("");
+                }
+            }
+
+            await fetchAllQuizzes(); // reload lại danh sách quiz sau khi tạo
+        } catch (err) {
+            console.error("❌ Lỗi khi tạo quiz:", err);
+            toast.error("❌ Tạo quiz thất bại.");
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
 
     useEffect(() => {
         fetchFoldersQuiz();
@@ -460,6 +514,7 @@ export default function CreateQuestions() {
                                     </Button>
                                 </div>
 
+                                {/* Upload hoặc Text */}
                                 {mode === "upload" ? (
                                     <>
                                         <input
@@ -479,16 +534,29 @@ export default function CreateQuestions() {
                                                     <Image className="w-8 h-8 text-gray-400" />
                                                 </div>
                                                 <p className="text-gray-600">Kéo thả file hoặc click để chọn</p>
-                                                <p className="text-sm text-gray-500">
-                                                    PDF, DOC, JPG, PNG (Max 10MB)
-                                                </p>
+                                                <p className="text-sm text-gray-500">PDF, DOC, JPG, PNG (Max 10MB)</p>
                                             </div>
+                                        </div>
+
+                                        {/* ✅ Input số lượng dưới upload */}
+                                        <div className="flex items-center space-x-2 mt-2">
+                                            <span className="text-sm text-gray-600">Số câu:</span>
+                                            <Input
+                                                type="number"
+                                                className="w-16 h-8 px-2 py-0 text-sm"
+                                                min={1}
+                                                max={20}
+                                                value={quizCount}
+                                                onChange={(e) => setQuizCount(Number(e.target.value))}
+                                            />
                                         </div>
                                     </>
                                 ) : (
                                     <>
                                         <div className="space-y-2">
-                                            <Label htmlFor="content" className="text-xl font-semibold text-center w-full block">Nhập nội dung</Label>
+                                            <Label htmlFor="content" className="text-xl font-semibold text-center w-full block">
+                                                Nhập nội dung
+                                            </Label>
                                             <Textarea
                                                 id="content"
                                                 placeholder="Paste nội dung tài liệu vào đây để AI tạo câu hỏi..."
@@ -497,8 +565,22 @@ export default function CreateQuestions() {
                                                 rows={8}
                                             />
                                         </div>
+
+                                        {/* ✅ Input số lượng dưới textarea */}
+                                        <div className="flex items-center space-x-2 mt-2">
+                                            <span className="text-sm text-gray-600">Số câu:</span>
+                                            <Input
+                                                type="number"
+                                                className="w-16 h-8 px-2 py-0 text-sm"
+                                                min={1}
+                                                max={20}
+                                                value={quizCount}
+                                                onChange={(e) => setQuizCount(Number(e.target.value))}
+                                            />
+                                        </div>
                                     </>
                                 )}
+
                                 {selectedFileName && (
                                     <p className="text-sm text-blue-600 font-medium mt-2">
                                         📄 Đã chọn: {selectedFileName}
@@ -508,7 +590,7 @@ export default function CreateQuestions() {
                                 <Button
                                     className="w-full"
                                     onClick={handleGenerateQuestions}
-                                    disabled={mode === "text" && !uploadedContent.trim() || isGenerating}
+                                    disabled={(mode === "text" && !uploadedContent.trim()) || isGenerating}
                                 >
                                     {isGenerating ? (
                                         <>
@@ -523,6 +605,7 @@ export default function CreateQuestions() {
                                     )}
                                 </Button>
                             </div>
+
                         </Card>
                     )}
 

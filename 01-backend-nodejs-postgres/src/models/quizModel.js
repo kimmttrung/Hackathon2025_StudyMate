@@ -1,6 +1,6 @@
 const pool = require("../config/db");
 
-// Cập nhật lại num_quizzes cho folder
+// ✅ Cập nhật num_quizzes trước để dùng được phía dưới
 const updateFolderQuizCount = async (folder_id) => {
     const countQuery = `SELECT COUNT(*) FROM Quizzes WHERE folder_id = $1`;
     const updateQuery = `UPDATE folderquizs SET num_quizzes = $2 WHERE id = $1`;
@@ -10,6 +10,9 @@ const updateFolderQuizCount = async (folder_id) => {
 
     await pool.query(updateQuery, [folder_id, count]);
 };
+
+// ✅ Rồi mới export ra
+exports.updateFolderQuizCount = updateFolderQuizCount;
 
 // Thêm 1 câu hỏi quiz mới
 exports.insertQuiz = async ({
