@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -92,6 +94,7 @@ const Header = () => {
               className="px-6 py-2 bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white rounded-xl font-semibold shadow-lg transition-all duration-300"
               onMouseEnter={(e) => handleButtonHover(e, true, 'primary')}
               onMouseLeave={(e) => handleButtonHover(e, false, 'primary')}
+              onClick={() => navigate("/login")}
             >
               Dùng thử miễn phí
             </button>
@@ -148,7 +151,11 @@ const Header = () => {
                 Liên hệ
               </a>
               <div className="px-4 pt-2 flex flex-col gap-2">
-                <button className="w-full px-6 py-2 bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white rounded-xl font-semibold">
+                <button
+                  className="w-full px-6 py-2 bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white rounded-xl font-semibold"
+                  onClick={() => navigate("/login")}
+                >
+
                   Dùng thử miễn phí
                 </button>
                 <button className="w-full px-6 py-2 border-2 border-[#6366F1] text-[#6366F1] rounded-xl font-semibold">

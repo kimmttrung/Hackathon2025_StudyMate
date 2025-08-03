@@ -72,6 +72,8 @@ const AppRoutes = () => {
           <Route path="chat" element={<Chat />} />
           <Route path="friends" element={<AddFriend />} />
           <Route path="leaderboard" element={<Leaderboard />} />
+          <Route path="history" element={<PlaceholderPage />} />
+          <Route path="mindmaps" element={<PlaceholderPage />} />
 
 
         </Route>

@@ -49,10 +49,12 @@ import {
     File,
     Image,
     SwitchCamera,
-    Minus
+    Minus,
+    UploadIcon
 } from "lucide-react";
 import axios from "@/utils/axios.customize";
 import { toast } from 'react-toastify';
+import UploadImageCloudinary from "@/components/UploadImageCloudinary";
 
 export default function CreateQuestions() {
     const [selectedFolder, setSelectedFolder] = useState(null);
@@ -66,16 +68,29 @@ export default function CreateQuestions() {
     const fileInputRef = useRef(null);
     const [loading, setLoading] = useState(false);
     const [selectedFileName, setSelectedFileName] = useState("");
+    const [foldersQuiz, setFoldersQuiz] = useState([]);
+    const initialQuestion = {
+        question_text: "",
+        option_a: "",
+        option_b: "",
+        option_c: "",
+        option_d: "",
+        correct_option: "a",
+        explanation: "",
+        question_image: "",
+        preview_image: "",
+        file: null,
+    };
+    const [questions, setQuestions] = useState([initialQuestion]);
+    const [questionsList, setQuestionsList] = useState([initialQuestion]);
+    const [resetCount, setResetCount] = useState(0);
+
+    // Edit Delete quiz
+    const [selectedQuiz, setSelectedQuiz] = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     // Tạo Quiz AI 
-    const [foldersQuiz, setFoldersQuiz] = useState([]);
-    const [questions, setQuestions] = useState([
-        {
-            question: "",
-            options: ["", "", "", ""],
-            correctIndex: 1,
-        },
-    ]);
 
     const filteredFolders = foldersQuiz.filter((folder) =>
         folder.name.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -185,52 +200,124 @@ export default function CreateQuestions() {
         setTimeout(() => setIsGenerating(false), 2000);
     };
 
+
     // Tạo Quiz thủ công 
-    const handleChangeQuestion = (index, value) => {
-        const newQuestions = [...questions];
-        newQuestions[index].question = value;
-        setQuestions(newQuestions);
-    };
 
-    const handleChangeOption = (qIndex, optIndex, value) => {
-        const newQuestions = [...questions];
-        newQuestions[qIndex].options[optIndex] = value;
-        setQuestions(newQuestions);
-    };
-
-    const handleSelectCorrect = (qIndex, optIndex) => {
-        const newQuestions = [...questions];
-        newQuestions[qIndex].correctIndex = optIndex;
-        setQuestions(newQuestions);
+    const handleChangeField = (qIndex, field, value) => {
+        setQuestions((prev) => {
+            const updated = [...prev];
+            updated[qIndex] = {
+                ...updated[qIndex],
+                [field]: value,
+            };
+            return updated;
+        });
     };
 
     const addQuestion = () => {
-        setQuestions([
-            ...questions,
+        setQuestions((prev) => [
+            ...prev,
             {
-                question: "",
-                options: ["", "", "", ""],
-                correctIndex: null,
+                question_text: "",
+                option_a: "",
+                option_b: "",
+                option_c: "",
+                option_d: "",
+                correct_option: "a",
+                explanation: "",
+                question_image: "",
             },
         ]);
     };
 
-    const removeQuestion = (index) => {
-        const newQuestions = [...questions];
-        newQuestions.splice(index, 1);
-        setQuestions(newQuestions);
+    const removeQuestion = (qIndex) => {
+        setQuestions((prev) => prev.filter((_, i) => i !== qIndex));
     };
 
-    const handleSubmitAll = () => {
-        console.log("Generated Questions:", questions);
-        // Call backend API here if needed
+    const fetchAllQuizzes = async () => {
+        try {
+            const res = await axios.get(`/api/quiz/folder/${selectedFolder.id}`);
+            // console.log("✅ Quiz list from folder", res);
+            if (res && res.quizzes) {
+                setQuestionsList(res.quizzes); // cập nhật danh sách câu hỏi đã tạo
+            } else {
+                setQuestionsList([]); // fallback nếu không có quiz
+            }
+        } catch (error) {
+            console.error("❌ Lỗi lấy danh sách quiz:", error.res);
+            return [];
+        }
     };
 
+    const handleSubmitAll = async () => {
+        const uploadedQuestions = await Promise.all(
+            questions.map(async (q) => {
+                let imageUrl = "";
 
+                if (q.question_image && q.question_image.constructor.name === "File") {
+                    const formData = new FormData();
+                    formData.append("file", q.question_image);
+                    formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+
+                    // ✅ Log kiểm tra
+                    for (let [key, value] of formData.entries()) {
+                        // console.log("🧾 FormData:", key, value);
+                    }
+
+                    try {
+                        const res = await fetch(
+                            `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                            {
+                                method: "POST",
+                                body: formData,
+                            }
+                        );
+                        const data = await res.json();
+                        imageUrl = data.secure_url || "";
+                        // console.log("✅ Upload thành công:", imageUrl);
+                    } catch (error) {
+                        toast.error("❌ Lỗi upload ảnh:", error);
+                    }
+                } else if (typeof q.question_image === "string") {
+                    imageUrl = q.question_image;
+                }
+
+                return {
+                    ...q,
+                    question_image: imageUrl,
+                };
+            })
+        );
+
+        try {
+            const res = await axios.post("/api/quiz/create", {
+                folder_id: selectedFolder.id, // 👈 đừng quên nếu cần folder_id
+                quizzes: uploadedQuestions,
+            });
+
+            // console.log("check create", res)
+
+            if (res.CD === 1) {
+                toast.success("✅ Tạo quiz thành công!");
+                setQuestions([{ ...initialQuestion }]);
+                setResetCount((prev) => prev + 1);
+                await fetchAllQuizzes();
+            }
+        } catch (error) {
+            console.error("❌ Lỗi gửi dữ liệu:", error);
+            toast.error("❌ Có lỗi xảy ra khi gửi dữ liệu.");
+        }
+    };
 
     useEffect(() => {
         fetchFoldersQuiz();
     }, []);
+
+    useEffect(() => {
+        if (selectedFolder?.id) {
+            fetchAllQuizzes();
+        }
+    }, [selectedFolder]);
 
     if (selectedFolder) {
         return (
@@ -270,24 +357,19 @@ export default function CreateQuestions() {
                         // Tao thủ công 
                         <Card className="bg-white/80 shadow-xl backdrop-blur rounded-2xl p-6 space-y-6">
                             <CardHeader>
-                                <CardTitle className="text-lg font-bold text-indigo-700">
-                                    ✍️ Tạo Quiz Thủ Công
-                                </CardTitle>
+                                <CardTitle className="text-lg font-bold text-indigo-700">✍️ Tạo Quiz Thủ Công</CardTitle>
                                 <CardDescription>
-                                    Nhập câu hỏi và lựa chọn, đánh dấu đáp án đúng, sau đó nhấn "Tạo tất cả"
+                                    Nhập câu hỏi, lựa chọn, giải thích, ảnh minh họa, đánh dấu đáp án đúng rồi nhấn "Tạo tất cả"
                                 </CardDescription>
                             </CardHeader>
 
                             {questions.map((q, qIndex) => (
-                                <div
-                                    key={qIndex}
-                                    className="border border-gray-300 rounded-lg p-4 bg-white/90 space-y-4"
-                                >
+                                <div key={qIndex} className="border border-gray-300 rounded-lg p-4 bg-white/90 space-y-4">
                                     <div className="flex justify-between items-center">
                                         <Input
                                             placeholder={`Câu hỏi ${qIndex + 1}`}
-                                            value={q.question}
-                                            onChange={(e) => handleChangeQuestion(qIndex, e.target.value)}
+                                            value={q.question_text}
+                                            onChange={(e) => handleChangeField(qIndex, "question_text", e.target.value)}
                                         />
                                         {questions.length > 1 && (
                                             <Button
@@ -301,31 +383,47 @@ export default function CreateQuestions() {
                                         )}
                                     </div>
 
+                                    <UploadImageCloudinary
+                                        onFileSelect={(file) => handleChangeField(qIndex, "question_image", file)}
+                                        resetTrigger={resetCount}
+                                    />
+
+
+                                    {/* Các lựa chọn */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {q.options.map((opt, optIndex) => (
-                                            <div key={optIndex} className="flex items-center space-x-2">
+                                        {["a", "b", "c", "d"].map((optKey) => (
+                                            <div key={optKey} className="flex items-center space-x-2">
                                                 <Button
                                                     size="icon"
-                                                    variant={q.correctIndex === optIndex ? "default" : "outline"}
-                                                    onClick={() => handleSelectCorrect(qIndex, optIndex)}
+                                                    variant={q.correct_option === optKey ? "default" : "outline"}
+                                                    onClick={() => handleChangeField(qIndex, "correct_option", optKey)}
                                                 >
-                                                    {q.correctIndex === optIndex ? (
+                                                    {q.correct_option === optKey ? (
                                                         <Check className="w-4 h-4 text-white" />
                                                     ) : (
                                                         <X className="w-4 h-4 text-red-500" />
                                                     )}
                                                 </Button>
                                                 <Input
-                                                    placeholder={`Đáp án ${String.fromCharCode(65 + optIndex)}`}
-                                                    value={opt}
-                                                    onChange={(e) => handleChangeOption(qIndex, optIndex, e.target.value)}
+                                                    placeholder={`Đáp án ${optKey.toUpperCase()}`}
+                                                    value={q[`option_${optKey}`]}
+                                                    onChange={(e) => handleChangeField(qIndex, `option_${optKey}`, e.target.value)}
                                                 />
                                             </div>
                                         ))}
                                     </div>
+
+                                    {/* Giải thích */}
+                                    <Textarea
+                                        placeholder="Giải thích cho đáp án đúng (nếu có)"
+                                        value={q.explanation}
+                                        onChange={(e) => handleChangeField(qIndex, "explanation", e.target.value)}
+                                        className="h-24"
+                                    />
                                 </div>
                             ))}
 
+                            {/* Nút thêm và submit */}
                             <div className="flex justify-between items-center">
                                 <Button variant="secondary" onClick={addQuestion}>
                                     <Plus className="w-4 h-4 mr-2" /> Thêm câu hỏi
@@ -336,6 +434,8 @@ export default function CreateQuestions() {
                                 </Button>
                             </div>
                         </Card>
+
+
                     ) : (
                         // Tạo bằng AI
                         <Card>
@@ -438,58 +538,68 @@ export default function CreateQuestions() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4 max-h-96 overflow-y-auto">
-                                {questions.map((question) => (
+                            <div className="space-y-4  hide-scrollbar">
+                                {/* List quiz  */}
+                                {questionsList.map((question) => (
                                     <div
                                         key={question.id}
                                         className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                                     >
                                         <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                <p className="font-medium text-gray-900 mb-2">
-                                                    {question.question}
-                                                </p>
-                                                <p className="text-sm text-gray-600 mb-3">
-                                                    Đáp án: {question.answer}
-                                                </p>
-                                                <div className="flex items-center space-x-2">
-                                                    <Badge
-                                                        variant={
-                                                            question.type === "multiple-choice"
-                                                                ? "default"
-                                                                : "secondary"
-                                                        }
-                                                    >
-                                                        {question.type === "multiple-choice"
-                                                            ? "Trắc nghiệm"
-                                                            : "Tự luận"}
-                                                    </Badge>
-                                                    <Badge
-                                                        variant="outline"
-                                                        className={
-                                                            question.difficulty === "easy"
-                                                                ? "border-green-500 text-green-700"
-                                                                : question.difficulty === "medium"
-                                                                    ? "border-yellow-500 text-yellow-700"
-                                                                    : "border-red-500 text-red-700"
-                                                        }
-                                                    >
-                                                        {question.difficulty === "easy"
-                                                            ? "Dễ"
-                                                            : question.difficulty === "medium"
-                                                                ? "Trung bình"
-                                                                : "Khó"}
-                                                    </Badge>
+                                            <div className="flex gap-10 items-start">
+                                                {question.question_image && (
+                                                    <img
+                                                        src={question.question_image}
+                                                        alt="Question"
+                                                        className="w-48 h-48 object-cover rounded shadow border"
+                                                    />
+                                                )}
+
+                                                <div className="flex-1">
+                                                    <p className="font-medium text-gray-900 mb-2">
+                                                        {question.question_text}
+                                                    </p>
+
+                                                    <ul className="text-sm text-gray-700 mb-3 space-y-1 list-disc list-inside">
+                                                        <li>A. {question.option_a}</li>
+                                                        <li>B. {question.option_b}</li>
+                                                        <li>C. {question.option_c}</li>
+                                                        <li>D. {question.option_d}</li>
+                                                    </ul>
+
+                                                    <p className="text-sm text-indigo-600 font-semibold">
+                                                        Đáp án đúng: {question.correct_option?.toUpperCase()}
+                                                    </p>
+
+                                                    {question.explanation && (
+                                                        <p className="text-sm text-gray-600 mt-2">
+                                                            Giải thích: {question.explanation}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
+
+
                                             <div className="flex space-x-1 ml-4">
-                                                <Button variant="ghost" size="sm">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setSelectedQuiz(question);
+                                                        setShowEditModal(true);
+                                                    }}
+                                                >
                                                     <Edit3 className="w-4 h-4" />
                                                 </Button>
+
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
                                                     className="text-red-600 hover:text-red-700"
+                                                    onClick={() => {
+                                                        setSelectedQuiz(question);
+                                                        setShowDeleteModal(true);
+                                                    }}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </Button>
@@ -497,7 +607,183 @@ export default function CreateQuestions() {
                                         </div>
                                     </div>
                                 ))}
-                                {questions.length === 0 && (
+
+                                {/* Modal Edit Quiz  */}
+                                {showEditModal && selectedQuiz && (
+                                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                                        <div className="bg-white rounded-xl p-6 w-full max-w-xl space-y-4 shadow-lg">
+                                            <h2 className="text-xl font-bold text-indigo-700">📝 Chỉnh sửa câu hỏi</h2>
+
+                                            {/* Ảnh hiển thị */}
+                                            <div className="flex justify-center items-center gap-4">
+                                                {/* Nếu có ảnh thì hiển thị */}
+                                                {selectedQuiz.question_image && (
+                                                    <img
+                                                        src={
+                                                            typeof selectedQuiz.question_image === "string"
+                                                                ? selectedQuiz.question_image
+                                                                : URL.createObjectURL(selectedQuiz.question_image)
+                                                        }
+                                                        alt="Preview"
+                                                        className="w-40 h-40 object-cover rounded shadow border"
+                                                    />
+                                                )}
+
+                                                {/* Nút upload ảnh luôn hiển thị */}
+                                                <label
+                                                    htmlFor="upload-image"
+                                                    className="cursor-pointer flex flex-col items-center justify-center w-12 h-12 border-2 border-dashed border-gray-400 rounded-full hover:bg-gray-100 transition"
+                                                    title="Tải ảnh mới"
+                                                >
+                                                    <UploadIcon className="w-5 h-5 text-gray-600" />
+                                                </label>
+
+                                                <input
+                                                    id="upload-image"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            setSelectedQuiz({ ...selectedQuiz, question_image: file });
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+
+                                            {/* Câu hỏi */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Câu hỏi</label>
+                                                <Input
+                                                    value={selectedQuiz.question_text}
+                                                    onChange={(e) =>
+                                                        setSelectedQuiz({ ...selectedQuiz, question_text: e.target.value })
+                                                    }
+                                                    placeholder="Nhập nội dung câu hỏi"
+                                                />
+                                            </div>
+
+                                            {/* Các đáp án */}
+                                            {["a", "b", "c", "d"].map((optKey) => (
+                                                <div key={optKey}>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        Đáp án {optKey.toUpperCase()}
+                                                    </label>
+                                                    <Input
+                                                        value={selectedQuiz[`option_${optKey}`]}
+                                                        onChange={(e) =>
+                                                            setSelectedQuiz({ ...selectedQuiz, [`option_${optKey}`]: e.target.value })
+                                                        }
+                                                        placeholder={`Nhập đáp án ${optKey.toUpperCase()}`}
+                                                    />
+                                                </div>
+                                            ))}
+
+                                            {/* Đáp án đúng */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Đáp án đúng (a, b, c, d)</label>
+                                                <Input
+                                                    value={selectedQuiz.correct_option}
+                                                    onChange={(e) =>
+                                                        setSelectedQuiz({ ...selectedQuiz, correct_option: e.target.value.toLowerCase() })
+                                                    }
+                                                    placeholder="Nhập đáp án đúng"
+                                                />
+                                            </div>
+
+                                            {/* Giải thích */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Giải thích (nếu có)</label>
+                                                <Input
+                                                    value={selectedQuiz.explanation}
+                                                    onChange={(e) =>
+                                                        setSelectedQuiz({ ...selectedQuiz, explanation: e.target.value })
+                                                    }
+                                                    placeholder="Nhập giải thích cho đáp án"
+                                                />
+                                            </div>
+
+                                            {/* Nút hành động */}
+                                            <div className="flex justify-end space-x-2 pt-2">
+                                                <Button variant="outline" onClick={() => setShowEditModal(false)}>
+                                                    Hủy
+                                                </Button>
+                                                <Button
+                                                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                                                    onClick={async () => {
+                                                        try {
+                                                            let updatedQuiz = { ...selectedQuiz };
+                                                            // Nếu là File -> upload lên Cloudinary
+                                                            if (updatedQuiz.question_image &&
+                                                                typeof updatedQuiz.question_image === "object" &&
+                                                                updatedQuiz.question_image.constructor?.name === "File") {
+                                                                const formData = new FormData();
+                                                                formData.append("file", updatedQuiz.question_image);
+                                                                formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+
+                                                                const res = await fetch(
+                                                                    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                                                                    { method: "POST", body: formData }
+                                                                );
+
+                                                                const data = await res.json();
+                                                                updatedQuiz.question_image = data.secure_url;
+                                                            }
+
+                                                            await axios.put(`/api/quiz/${updatedQuiz.id}`, updatedQuiz);
+                                                            toast.success("✅ Cập nhật thành công");
+                                                            setShowEditModal(false);
+                                                            await fetchAllQuizzes();
+                                                        } catch (err) {
+                                                            toast.error("❌ Lỗi khi cập nhật quiz");
+                                                            console.error(err);
+                                                        }
+                                                    }}
+
+                                                >
+                                                    Lưu
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+
+                                {/* Modal Delete Quiz  */}
+                                {showDeleteModal && selectedQuiz && (
+                                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                                        <div className="bg-white rounded-xl p-6 w-full max-w-md space-y-4 shadow-lg text-center">
+                                            <h2 className="text-lg font-bold text-red-600">⚠️ Xác nhận xóa quiz</h2>
+                                            <p>Bạn có chắc chắn muốn xóa câu hỏi này không?</p>
+                                            <p className="text-gray-600 font-medium">"{selectedQuiz.question_text}"</p>
+
+                                            <div className="flex justify-center space-x-4 mt-4">
+                                                <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+                                                    Hủy
+                                                </Button>
+                                                <Button
+                                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                                    onClick={async () => {
+                                                        try {
+                                                            await axios.delete(`/api/quiz/${selectedQuiz.id}`);
+                                                            toast.success("✅ Đã xóa quiz");
+                                                            setShowDeleteModal(false);
+                                                            fetchAllQuizzes();
+                                                        } catch (err) {
+                                                            toast.error("❌ Lỗi khi xóa quiz");
+                                                        }
+                                                    }}
+                                                >
+                                                    Xóa
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+
+                                {questionsList.length === 0 && (
                                     <div className="text-center py-8 text-gray-500">
                                         <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
                                         <p>Chưa có câu hỏi nào</p>
