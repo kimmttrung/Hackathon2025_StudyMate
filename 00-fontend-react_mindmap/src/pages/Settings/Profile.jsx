@@ -18,6 +18,7 @@ import axios from "@/utils/axios.customize";
 import { toast } from "react-toastify";
 import { AuthContext } from "@/components/context/auth.context";
 import { cn } from "@/components/lib/utils";
+import { Textarea } from "@/components/ui/Textarea";
 
 export default function Profile() {
     const { setAuth } = useContext(AuthContext);
@@ -36,7 +37,8 @@ export default function Profile() {
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
-        twoFactorAuth: false
+        twoFactorAuth: false,
+        bio: "",
     });
 
     const languages = [
@@ -98,6 +100,7 @@ export default function Profile() {
             form.append("phone", formData.phone || "");
             form.append("province", formData.province || "");
             form.append("district", formData.district || "");
+            form.append("bio", formData.bio || "");
             form.append("date_of_birth", localDateString(formData.date_of_birth));
             form.append("avatar", formData.avatar); // File
 
@@ -120,7 +123,7 @@ export default function Profile() {
             // ✅ Sau khi cập nhật thành công, gọi lại API lấy user mới
             const access_token = localStorage.getItem("access_token");
             const res = await axios.get("/api/users/account",);
-            console.log("check res1", res);
+            // console.log("check res1", res);
             const updatedUser = res.user;
             setAuth({
                 isAuthenticated: true,
@@ -138,6 +141,7 @@ export default function Profile() {
                 date_of_birth: updatedUser.date_of_birth ? new Date(updatedUser.date_of_birth) : null,
                 province: updatedUser.address_province || "",
                 district: updatedUser.address_district || "",
+                bio: updatedUser.bio || "",
                 avatar: null, // reset file upload
             }));
 
@@ -176,6 +180,7 @@ export default function Profile() {
                 date_of_birth: auth.user.date_of_birth ? new Date(auth.user.date_of_birth) : null,
                 province: auth.user.address_province || "",
                 district: auth.user.address_district || "",
+                bio: auth.user.bio || "",
                 avatar: null,
                 avatarPreview: auth.user.avatar || null,
                 changePassword: false,
@@ -219,6 +224,7 @@ export default function Profile() {
                         <div className="space-y-6">
                             <h3 className="text-xl font-semibold text-slate-800 border-b border-slate-200 pb-2">Thông tin cơ bản</h3>
 
+                            {/* Họ và tên và Giới tính */}
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <Label htmlFor="full_name">Họ và tên *</Label>
@@ -255,7 +261,20 @@ export default function Profile() {
                                     </RadioGroup>
                                 </div>
                             </div>
+                            {/* Giới thiệu bản thân (Bio) */}
+                            <div className="mt-6">
+                                <Label htmlFor="bio">Giới thiệu bản thân</Label>
+                                <Textarea
+                                    id="bio"
+                                    placeholder="Mô tả ngắn về bạn, sở thích, chuyên ngành học..."
+                                    value={formData.bio || ""}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                                    className="h-0"
+                                    rows={4}
+                                />
+                            </div>
 
+                            {/* Ngày sinh và số điện thoại  */}
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <Label>Ngày sinh *</Label>
@@ -266,7 +285,9 @@ export default function Profile() {
                                                 className="w-full mt-2 justify-start text-left font-normal"
                                             >
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {formData.date_of_birth ? format(new Date(formData.date_of_birth), "dd/MM/yyyy") : "Chọn ngày sinh"}
+                                                {formData.date_of_birth
+                                                    ? format(new Date(formData.date_of_birth), "EEEE - dd/MM/yyyy") // VD: "Monday - 04/08/2025"
+                                                    : "Chọn ngày sinh"}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0" align="start">
@@ -277,6 +298,8 @@ export default function Profile() {
                                                     setFormData(prev => ({ ...prev, date_of_birth: date }));
                                                     setCalendarOpen(false);
                                                 }}
+                                                fromDate={new Date(1950, 0, 1)}
+                                                toDate={new Date()} // hôm nay
                                                 initialFocus
                                             />
                                         </PopoverContent>

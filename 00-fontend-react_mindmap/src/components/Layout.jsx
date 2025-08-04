@@ -299,7 +299,13 @@ export default function Layout({ children, fullWidth }) {
                         </Link>
 
                         <button
-                            onClick={() => {
+                            onClick={async () => {
+                                try {
+                                    await axios.post("/api/users/logout");
+                                } catch (err) {
+                                    console.warn("Logout không thành công trên server:", err.message);
+                                }
+
                                 setAuth({
                                     isAuthenticated: false,
                                     user: {
@@ -313,8 +319,11 @@ export default function Layout({ children, fullWidth }) {
                                         full_name: "",
                                         province: "",
                                         avatar: "",
+                                        bio: "",
+                                        is_online: false,
                                     }
-                                })
+                                });
+
                                 localStorage.clear();
                                 navigate("/login");
                             }}
@@ -323,6 +332,7 @@ export default function Layout({ children, fullWidth }) {
                             <LogOut className="w-4 h-4 text-red-500" />
                             Đăng xuất
                         </button>
+
                     </div>
                 )}
 

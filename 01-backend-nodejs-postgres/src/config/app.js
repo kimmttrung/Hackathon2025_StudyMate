@@ -21,7 +21,8 @@ const reviewRoutes = require('../routes/reviewRoutes');
 const aiRoutes = require("../routes/aiFlashcard.route");
 const folderQuizRoutes = require('../routes/folderQuizRoute');
 const quizRoutes = require('../routes/quizRoutes');
-const aiQuizRouter = require('../routes/aiQuiz.route')
+const aiQuizRouter = require('../routes/aiQuiz.route');
+const friendRouter = require('../routes/friendRoutes');
 //middleware if having 
 
 //use data routes   
@@ -34,6 +35,7 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/folder-quiz", folderQuizRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/quiz/ai", aiQuizRouter);
+app.use("/api/friends", friendRouter);
 
 app.use((req, res) => {
     res.status(404).json({ error: "Not Found" });

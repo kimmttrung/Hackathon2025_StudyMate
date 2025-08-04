@@ -67,6 +67,9 @@ exports.login = async (req, res) => {
         }
       )
 
+      // Set is_online = true
+      await User.updateUserOnlineStatus(user.id, true);
+
       res.status(200).json({
         access_token,
         msg: 'Login successful',
@@ -82,6 +85,8 @@ exports.login = async (req, res) => {
           province: user.address_province,
           district: user.address_district,
           date_of_birth: user.date_of_birth,
+          bio: user.bio,
+          is_online: true, // Optional: client side tiện xử lý
         }
       });
     } else {

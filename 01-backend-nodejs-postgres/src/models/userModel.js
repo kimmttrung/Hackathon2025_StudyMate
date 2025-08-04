@@ -4,7 +4,7 @@ const findUserByEmail = async (email) => {
     const result = await client.query(
         `SELECT 
             id, email, username, password, full_name, gender, date_of_birth, phone, 
-            address_province, address_district, nationality, avatar, created_at
+            address_province, address_district, nationality, avatar, created_at, bio
          FROM users
          WHERE email = $1`,
         [email]
@@ -15,7 +15,7 @@ const findUserByEmail = async (email) => {
 const findUserByEmailWithNotPassword = async (email) => {
     const result = await client.query(
         `SELECT 
-            id, email, username, full_name, gender, date_of_birth, phone, 
+            id, email, username, full_name, gender, date_of_birth, phone, bio,
             address_province, address_district, nationality, avatar, created_at
          FROM users
          WHERE email = $1`,
@@ -26,11 +26,20 @@ const findUserByEmailWithNotPassword = async (email) => {
 };
 
 const insertUser = async (email, hashedPassword) => {
-    await client.query(
-        'INSERT INTO users (email, password) VALUES ($1, $2)',
+    const userResult = await client.query(
+        'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id',
         [email, hashedPassword]
     );
-}
+
+    const userId = userResult.rows[0].id;
+
+    // Sau khi tạo user, tạo luôn user_stats mặc định
+    await client.query(
+        'INSERT INTO user_stats (user_id) VALUES ($1)',
+        [userId]
+    );
+};
+
 
 const updateUser = async (email, username, password, gender, nationality, phonenumber) => {
     await client.query(
@@ -75,14 +84,19 @@ const updateUserProfile = async (email, updates = {}) => {
         UPDATE users
         SET ${fields.join(', ')}
         WHERE email = $${index}
-        RETURNING id, username, email, avatar, full_name, gender, date_of_birth, phone, address_province, address_district, nationality;
+        RETURNING id, username, email, avatar, full_name, gender, date_of_birth, phone, address_province, address_district, nationality, bio;
     `;
 
     const result = await client.query(query, values);
     return result.rows[0]; // Trả về user sau khi update
 };
 
-
+const updateUserOnlineStatus = async (userId, isOnline) => {
+    return client.query(
+        "UPDATE users SET is_online = $1 WHERE id = $2",
+        [isOnline, userId]
+    );
+};
 
 
 module.exports = {
@@ -91,5 +105,6 @@ module.exports = {
     updateUser,
     findUserByName,
     updateUserProfile,
-    findUserByEmailWithNotPassword
+    findUserByEmailWithNotPassword,
+    updateUserOnlineStatus
 };

@@ -39,7 +39,7 @@ const LoginForm = () => {
         }
         try {
             const res = await axios.post(`/api/login`, { email, password });
-            console.log(">>> check res", res);
+            // console.log(">>> check res", res);
             if (res.success) {
                 // lưu vào localStorage
                 if (res?.access_token) {

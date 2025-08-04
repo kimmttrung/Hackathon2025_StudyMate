@@ -1,4 +1,4 @@
-const { findUserByEmail, findUserByName, updateUserProfile, findUserByEmailWithNotPassword } = require('../models/userModel');
+const { findUserByEmail, findUserByName, updateUserProfile, findUserByEmailWithNotPassword, updateUserOnlineStatus } = require('../models/userModel');
 const bcrypt = require('bcrypt');
 
 const updateUserController = async (req, res) => {
@@ -14,6 +14,7 @@ const updateUserController = async (req, res) => {
         district,
         nationality,
         currentPassword,
+        bio,
     } = req.body;
 
     if (!email) {
@@ -48,6 +49,7 @@ const updateUserController = async (req, res) => {
         if (province) updates.address_province = province.trim();
         if (district) updates.address_district = district.trim();
         if (nationality) updates.nationality = nationality.trim();
+        if (bio) updates.bio = bio.trim();
 
         // Update password if provided
         if (password?.trim()) {
@@ -106,7 +108,22 @@ const getAccountController = async (req, res) => {
     }
 };
 
+const logout = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(400).json({ message: "Không xác định được người dùng" });
+        }
+
+        await updateUserOnlineStatus(userId, false);
+
+        res.status(200).json({ success: true, message: "Đăng xuất thành công" });
+    } catch (err) {
+        console.error("Lỗi logout:", err);
+        res.status(500).json({ message: "Đã xảy ra lỗi khi đăng xuất" });
+    }
+};
 
 module.exports = {
-    updateUserController, getAccountController
+    updateUserController, getAccountController, logout
 };

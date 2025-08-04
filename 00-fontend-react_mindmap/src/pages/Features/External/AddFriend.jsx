@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Search,
     Users,
@@ -14,9 +14,12 @@ import {
     BookOpen,
     Filter,
     Grid,
-    List as ListIcon
+    List as ListIcon,
+    UserCheck
 } from "lucide-react";
 import Layout from "@/components/Layout";
+import { toast } from 'react-toastify';
+import axios from "@/utils/axios.customize";
 
 export default function AddFriend() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -24,134 +27,30 @@ export default function AddFriend() {
     const [viewMode, setViewMode] = useState("grid");
     const [sortBy, setSortBy] = useState("active");
 
-    const users = [
-        {
-            id: 1,
-            name: "Trần Thi Anh Thư",
-            avatar: "https://weart.vn/wp-content/uploads/2025/06/gai-xinh-tu-suong-voi-anh-sang-tu-nhien-va-bieu-cam-rang-ro.jpg",
-            bio: "Học sinh lớp 12A1, yêu thích toán học và lập trình",
-            location: "Hà Nội",
-            joinDate: "2024-01-15",
-            isOnline: true,
-            stats: {
-                posts: 45,
-                friends: 123,
-                points: 892,
-                rank: "Gold"
-            },
-            subjects: ["toán", "tin học", "vật lý"],
-            isFriend: false,
-            isPending: false
-        },
-        {
-            id: 2,
-            name: "Phạm Thị Cẩm Tú",
-            avatar: "https://hoanghamobile.com/tin-tuc/wp-content/uploads/2024/04/anh-con-gai-15-1.jpg",
-            bio: "Chuyên môn tiếng Anh, thích chia sẻ kiến thức ngữ pháp",
-            location: "TP.HCM",
-            joinDate: "2024-02-20",
-            isOnline: true,
-            stats: {
-                posts: 67,
-                friends: 89,
-                points: 1204,
-                rank: "Platinum"
-            },
-            subjects: ["tiếng anh", "văn học", "địa lý"],
-            isFriend: true,
-            isPending: false
-        },
-        {
-            id: 3,
-            name: "Trần Huyền My",
-            avatar: "https://i.pinimg.com/736x/48/ac/18/48ac183471588768c4b26b44a747f34a.jpg",
-            bio: "Học sinh giỏi môn Lý, luôn sẵn sàng giúp đỡ bạn bè",
-            location: "Đà Nẵng",
-            joinDate: "2023-11-08",
-            isOnline: false,
-            stats: {
-                posts: 89,
-                friends: 156,
-                points: 1567,
-                rank: "Diamond"
-            },
-            subjects: ["vật lý", "toán", "hóa học"],
-            isFriend: false,
-            isPending: true
-        },
-        {
-            id: 4,
-            name: "Phạm Thị Thùy Trang",
-            avatar: "https://bayotech.vn/wp-content/uploads/2025/06/avatar-gai-xinh-20.jpg",
-            bio: "Sinh viên Y khoa, chuyên gia về sinh học và hóa sinh",
-            location: "Cần Thơ",
-            joinDate: "2024-03-12",
-            isOnline: true,
-            stats: {
-                posts: 34,
-                friends: 67,
-                points: 654,
-                rank: "Silver"
-            },
-            subjects: ["sinh học", "hóa học", "y học"],
-            isFriend: false,
-            isPending: false
-        },
-        {
-            id: 5,
-            name: "Nguyễn Quang Minh",
-            avatar: "https://www.anhnghethuatdulich.com/wp-content/uploads/2025/07/anh-chan-dung-trai-dep.jpg",
-            bio: "Yêu thích lịch sử và văn hóa Việt Nam, thích nghiên cứu",
-            location: "Huế",
-            joinDate: "2023-09-30",
-            isOnline: false,
-            stats: {
-                posts: 78,
-                friends: 98,
-                points: 1123,
-                rank: "Gold"
-            },
-            subjects: ["lịch sử", "văn học", "địa lý"],
-            isFriend: false,
-            isPending: false
-        },
-        {
-            id: 6,
-            name: "Phan Văn Tiến",
-            avatar: "https://img.tripi.vn/cdn-cgi/image/width=700,height=700/https://gcs.tripi.vn/public-tripi/tripi-feed/img/482743iVF/anh-mo-ta.png",
-            bio: "Học sinh chuyên Hóa, đam mê thí nghiệm và nghiên cứu",
-            location: "Nha Trang",
-            joinDate: "2024-01-25",
-            isOnline: true,
-            stats: {
-                posts: 56,
-                friends: 112,
-                points: 987,
-                rank: "Gold"
-            },
-            subjects: ["hóa học", "sinh học", "toán"],
-            isFriend: false,
-            isPending: false
-        }
-    ];
+    const [users, setUsers] = useState([]);
 
     const filteredUsers = users.filter(user => {
-        const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.bio.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.subjects.some(subject => subject.toLowerCase().includes(searchQuery.toLowerCase()));
+        const matchesSearch =
+            (user.username?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (user.bio?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (user.subjects || []).some(subject =>
+                (subject?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+            );
 
-        const matchesFilter = filterBy === "all" ||
+        const matchesFilter =
+            filterBy === "all" ||
             (filterBy === "online" && user.isOnline) ||
             (filterBy === "friends" && user.isFriend) ||
-            (filterBy === "pending" && user.isPending);
+            (filterBy === "pending" && user.isPending) ||
+            (filterBy === "incoming" && user.hasSentRequest && !user.isAccepted);  // lời họ gửi cho mình
 
         return matchesSearch && matchesFilter;
     });
 
     const sortedUsers = [...filteredUsers].sort((a, b) => {
         switch (sortBy) {
-            case "name":
-                return a.name.localeCompare(b.name);
+            case "username":
+                return a.username.localeCompare(b.username);
             case "points":
                 return b.stats.points - a.stats.points;
             case "posts":
@@ -173,13 +72,171 @@ export default function AddFriend() {
         }
     };
 
-    const handleSendFriendRequest = (userId) => {
-        console.log("Sending friend request to user:", userId);
-    };
-
     const handleStartChat = (userId) => {
         console.log("Starting chat with user:", userId);
     };
+
+    const sanitizeUserData = (users) => {
+        return users.map(user => ({
+            ...user,
+            full_name: user.full_name || "Không tên",
+            bio: user.bio || "",
+            isOnline: user.is_online || false,
+            subjects: Array.isArray(user.subjects) ? user.subjects : [],
+            stats: {
+                posts: user.posts || 0,
+                friends: user.friends || 0,
+                points: user.points || 0,
+                rank: user.rank || "Bronze"
+            },
+            avatar: typeof user.avatar === "object" && user.avatar
+                ? `data:image/jpeg;base64,${btoa(
+                    new Uint8Array(user.avatar.data).reduce((data, byte) => data + String.fromCharCode(byte), '')
+                )}`
+                : user.avatar || ""
+        }));
+    };
+
+
+    // Gọi API danh sách user để kết bạn (trừ user hiện tại)
+    const fetchSuggestedUsers = async () => {
+        try {
+            const res = await axios.get('/api/friends/suggestions');
+            // console.log("check res list user", res);
+            return res.data || []; // ✅ Vì res = { success, data }
+        } catch (error) {
+            console.error('❌ Lỗi khi lấy danh sách user:', error);
+            return [];
+        }
+    };
+
+    const fetchFriends = async () => {
+        try {
+            const res = await axios.get("/api/friends/list");
+            // console.log("check list ban be", res);
+            return res?.friends || [];
+        } catch (err) {
+            console.error("Lỗi lấy danh sách bạn bè:", err);
+            return [];
+        }
+    };
+
+    const fetchPendingRequests = async () => {
+        try {
+            const res = await axios.get("/api/friends/pending");
+            return res?.requests || [];
+        } catch (err) {
+            console.error("Lỗi lấy lời mời chờ:", err);
+            return [];
+        }
+    };
+
+    // Hàm lấy user_id từ token
+    const getUserIdFromToken = () => {
+        const access_token = localStorage.getItem("access_token");
+        const payloadBase64 = access_token.split('.')[1];
+        const payload = JSON.parse(atob(payloadBase64));
+        if (!payload) return null;
+
+        try {
+            return payload.id; // hoặc decoded.user_id tùy backend
+        } catch (err) {
+            console.error("Token invalid:", err);
+            return null;
+        }
+    };
+
+    const reloadUsers = async () => {
+        try {
+            const [suggested, friends, pending] = await Promise.all([
+                fetchSuggestedUsers(),
+                fetchFriends(),
+                fetchPendingRequests()
+            ]);
+
+            const currentUserId = getUserIdFromToken();
+            const friendIds = new Set();
+            const pendingMap = new Map();
+
+            // Xử lý danh sách bạn bè
+            friends.forEach(entry => {
+                if (entry.status === "accepted") {
+                    const friendId = entry.requester_id === currentUserId ? entry.receiver_id : entry.requester_id;
+                    friendIds.add(String(friendId));
+                }
+            });
+
+            // Xử lý lời mời pending từ cả 2 phía
+            pending.forEach(entry => {
+                const direction = entry.direction; // đã trả về từ backend
+                const userId = direction === "incoming" ? entry.requester_id : entry.receiver_id;
+                pendingMap.set(String(userId), direction);
+            });
+
+            // Gắn cờ trạng thái
+            const enriched = suggested.map(user => {
+                const idStr = String(user.id);
+                return {
+                    ...user,
+                    isFriend: friendIds.has(idStr),
+                    hasSentRequest: pendingMap.get(idStr) === "incoming",
+                    isPending: pendingMap.get(idStr) === "outgoing",
+                    isOnline: user.is_online ?? false, // 👈 Thêm dòng này
+                };
+            });
+
+            // Lọc theo tab đang chọn
+            let filtered = enriched;
+            if (filterBy === "online") {
+                filtered = enriched.filter(u => u.isOnline);
+            } else if (filterBy === "friends") {
+                filtered = enriched.filter(u => u.isFriend);
+            } else if (filterBy === "pending") {
+                filtered = enriched.filter(u => u.isPending);
+            } else if (filterBy === "incoming") {
+                filtered = enriched.filter(u => u.hasSentRequest && !u.isFriend);
+            }
+
+            const cleaned = sanitizeUserData(filtered);
+            setUsers(cleaned);
+        } catch (err) {
+            console.error("❌ Lỗi khi reload users:", err);
+        }
+    };
+
+
+
+    // API Gửi kết bạn
+    const handleSendFriendRequest = async (receiverId) => {
+        try {
+            const res = await axios.post("/api/friends/send", { receiver_id: receiverId });
+            if (res.success) {
+                toast.success("Đã gửi lời mời kết bạn!");
+                reloadUsers();
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error(err.response?.message || "Gửi lời mời thất bại");
+        }
+    };
+    // API Đồng í kết bạn
+    const handleAcceptFriendRequest = async (requesterId) => {
+        try {
+            const res = await axios.post("/api/friends/accept", { requester_id: requesterId });
+            console.log("check đồng í", res);
+            if (res.success) {
+                toast.success("Đã chấp nhận lời mời kết bạn!");
+                reloadUsers();
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error(err.response?.data?.message || "Chấp nhận lời mời thất bại");
+        }
+    };
+
+    useEffect(() => {
+        reloadUsers();
+    }, [filterBy]);
 
     return (
         <Layout fullWidth>
@@ -220,6 +277,7 @@ export default function AddFriend() {
                                         <SelectItem value="online">Đang online</SelectItem>
                                         <SelectItem value="friends">Bạn bè</SelectItem>
                                         <SelectItem value="pending">Chờ kết bạn</SelectItem>
+                                        <SelectItem value="incoming">Lời mời đến</SelectItem>
                                     </SelectContent>
                                 </Select>
 
@@ -236,6 +294,7 @@ export default function AddFriend() {
                                     </SelectContent>
                                 </Select>
 
+                                {/* Xem view list  */}
                                 <div className="flex border rounded-md">
                                     <Button
                                         variant={viewMode === "grid" ? "default" : "ghost"}
@@ -277,7 +336,7 @@ export default function AddFriend() {
                                         <div className="relative mb-4">
                                             <img
                                                 src={user.avatar}
-                                                alt={user.name}
+                                                alt={user.username}
                                                 className="w-20 h-20 rounded-full mx-auto"
                                             />
                                             <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white ${user.isOnline ? 'bg-green-500' : 'bg-gray-400'
@@ -287,12 +346,12 @@ export default function AddFriend() {
                                             </Badge>
                                         </div>
 
-                                        <h3 className="font-semibold text-gray-900 mb-2">{user.name}</h3>
+                                        <h3 className="font-semibold text-gray-900 mb-2">{user.username}</h3>
                                         <p className="text-sm text-gray-600 mb-3 line-clamp-2">{user.bio}</p>
 
                                         <div className="flex items-center justify-center gap-1 text-sm text-gray-500 mb-3">
                                             <MapPin className="w-3 h-3" />
-                                            {user.location}
+                                            {user.address_province}
                                         </div>
 
                                         {/* Subjects */}
@@ -335,6 +394,16 @@ export default function AddFriend() {
                                                 <Button disabled className="flex-1" size="sm" variant="outline">
                                                     Đã gửi lời mời
                                                 </Button>
+                                            ) : user.hasSentRequest ? (
+                                                <Button
+                                                    onClick={() => handleAcceptFriendRequest(user.id)}
+                                                    className="flex-1"
+                                                    size="sm"
+                                                    variant="default"
+                                                >
+                                                    <UserCheck className="w-4 h-4 mr-1" />
+                                                    Đồng ý
+                                                </Button>
                                             ) : (
                                                 <Button
                                                     onClick={() => handleSendFriendRequest(user.id)}
@@ -347,6 +416,7 @@ export default function AddFriend() {
                                                 </Button>
                                             )}
                                         </div>
+
                                     </div>
                                 </CardContent>
                             ) : (
@@ -356,7 +426,7 @@ export default function AddFriend() {
                                         <div className="relative">
                                             <img
                                                 src={user.avatar}
-                                                alt={user.name}
+                                                alt={user.username}
                                                 className="w-16 h-16 rounded-full"
                                             />
                                             <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${user.isOnline ? 'bg-green-500' : 'bg-gray-400'
@@ -365,7 +435,7 @@ export default function AddFriend() {
 
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="font-semibold text-gray-900">{user.name}</h3>
+                                                <h3 className="font-semibold text-gray-900">{user.username}</h3>
                                                 <Badge className={`text-white text-xs ${getRankColor(user.stats.rank)}`}>
                                                     {user.stats.rank}
                                                 </Badge>
@@ -374,7 +444,7 @@ export default function AddFriend() {
                                             <div className="flex items-center gap-4 text-xs text-gray-500">
                                                 <div className="flex items-center gap-1">
                                                     <MapPin className="w-3 h-3" />
-                                                    {user.location}
+                                                    {user.address_district}
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <BookOpen className="w-3 h-3" />
@@ -403,18 +473,30 @@ export default function AddFriend() {
                                             {user.isFriend ? (
                                                 <Button
                                                     onClick={() => handleStartChat(user.id)}
+                                                    className="flex-1"
                                                     size="sm"
                                                 >
                                                     <MessageCircle className="w-4 h-4 mr-1" />
                                                     Chat
                                                 </Button>
                                             ) : user.isPending ? (
-                                                <Button disabled size="sm" variant="outline">
-                                                    Đã gửi
+                                                <Button disabled className="flex-1" size="sm" variant="outline">
+                                                    Đã gửi lời mời
+                                                </Button>
+                                            ) : user.hasSentRequest ? (
+                                                <Button
+                                                    onClick={() => handleAcceptFriendRequest(user.id)}
+                                                    className="flex-1"
+                                                    size="sm"
+                                                    variant="default"
+                                                >
+                                                    <UserCheck className="w-4 h-4 mr-1" />
+                                                    Đồng ý
                                                 </Button>
                                             ) : (
                                                 <Button
                                                     onClick={() => handleSendFriendRequest(user.id)}
+                                                    className="flex-1"
                                                     size="sm"
                                                     variant="outline"
                                                 >

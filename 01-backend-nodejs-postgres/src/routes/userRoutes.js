@@ -10,5 +10,6 @@ const upload = multer({ storage });
 
 router.put("/update", upload.single("avatar"), userController.updateUserController);
 router.get('/account', jwtauth, userController.getAccountController);
+router.post("/logout", jwtauth, userController.logout);
 
 module.exports = router;
