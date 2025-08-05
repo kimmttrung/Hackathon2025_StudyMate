@@ -30,6 +30,7 @@ import Chat from './pages/Features/External/Chat';
 import Leaderboard from './pages/Features/External/Leaderboard';
 import CreateDiscussion from './pages/Features/Discussion/CreateDiscussion';
 import AddFriend from './pages/Features/External/AddFriend';
+import ReviewPageQuiz from './pages/Features/Quiz/ReviewPageQuiz';
 
 const AppRoutes = () => {
   return (
@@ -54,6 +55,7 @@ const AppRoutes = () => {
           <Route path="quizs/study" element={<StudyQuiz />} />
           <Route path="quizs/test" element={<TestQuiz />} />
           <Route path="quizs/games" element={<GameQuiz />} />
+          <Route path="quizs/review/:id" element={<ReviewPageQuiz />} />
 
           <Route path="settings" element={<SettingPage />} />
           <Route path="settings/profile" element={<Profile />} />

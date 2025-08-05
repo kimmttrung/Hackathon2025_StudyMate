@@ -17,6 +17,7 @@ import {
 import Layout from "@/components/Layout";
 import axios from "@/utils/axios.customize";
 import { useParams } from "react-router-dom";
+import FilePickerButtons from "./FilePickerButtons";
 
 export default function Chat() {
     const { userId } = useParams();
@@ -59,6 +60,16 @@ export default function Chat() {
         setMessage("");
     };
 
+    const handleFileSelect = (file) => {
+        console.log("📎 File đã chọn:", file);
+        // Gửi qua socket hoặc upload...
+    };
+
+    const handleImageSelect = (image) => {
+        console.log("🖼️ Ảnh đã chọn:", image);
+        // Gửi qua socket hoặc upload...
+    };
+
     useEffect(() => {
         const fetchFriends = async () => {
             try {
@@ -91,6 +102,7 @@ export default function Chat() {
             if (!selectedChat) return;
             try {
                 const res = await axios.get(`/api/messages/${selectedChat}`);
+                console.log("check mesage", res);
                 setMessages(res.messages);
             } catch (err) {
                 console.error("❌ Lỗi khi lấy lịch sử tin nhắn:", err);
@@ -191,6 +203,9 @@ export default function Chat() {
                                             <div className={`max-w-[70%] ${isMe ? 'order-2' : 'order-1'}`}>
                                                 <div className={`p-3 rounded-lg ${isMe ? 'bg-blue-500 text-white' : 'bg-white text-gray-900 border border-gray-200'}`}>
                                                     <p className="text-sm">{msg.content}</p>
+                                                    <p className="text-sm">
+                                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -199,8 +214,10 @@ export default function Chat() {
                             </div>
                             <div className="bg-white p-4 border-t border-gray-200">
                                 <div className="flex items-center gap-2">
-                                    <Button variant="ghost" size="sm"><Paperclip className="w-4 h-4" /></Button>
-                                    <Button variant="ghost" size="sm"><Image className="w-4 h-4" /></Button>
+                                    <FilePickerButtons
+                                        onFileSelect={handleFileSelect}
+                                        onImageSelect={handleImageSelect}
+                                    />
                                     <div className="flex-1 relative">
                                         <Input
                                             value={message}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -18,36 +18,53 @@ import {
     Target,
     TrendingUp,
 } from "lucide-react";
+import axios from "@/utils/axios.customize";
+import { toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
 
 export default function StudyQuiz() {
     const [searchTerm, setSearchTerm] = useState("");
-    const [folders] = useState([
-        {
-            id: "1",
-            name: "Toán học lớp 10",
-            questionCount: 25,
-            lastReviewed: "2024-01-15",
-            accuracy: 85,
-        },
-        {
-            id: "2",
-            name: "Tiếng Anh cơ bản",
-            questionCount: 18,
-            lastReviewed: "2024-01-14",
-            accuracy: 92,
-        },
-        {
-            id: "3",
-            name: "Lịch sử Việt Nam",
-            questionCount: 32,
-            lastReviewed: "2024-01-10",
-            accuracy: 78,
-        },
-    ]);
+    const [loading, setLoading] = useState(false);
+    const [foldersQuiz, setFoldersQuiz] = useState([]);
+    const navigate = useNavigate();
 
-    const filteredFolders = folders.filter((folder) =>
+    const filteredFolders = foldersQuiz.filter((folder) =>
         folder.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
+
+    const getUserIdFromToken = () => {
+        const access_token = localStorage.getItem("access_token");
+        const payloadBase64 = access_token.split('.')[1];
+        const payload = JSON.parse(atob(payloadBase64));
+        if (!payload) return null;
+
+        try {
+            return payload.id; // hoặc decoded.user_id tùy backend
+        } catch (err) {
+            console.error("Token invalid:", err);
+            return null;
+        }
+    };
+
+    const fetchFoldersQuiz = async () => {
+        const user_id = getUserIdFromToken();
+        if (!user_id) return;
+
+        try {
+            setLoading(true);
+            const res = await axios.get(`/api/folder-quiz/user/${user_id}`);
+            // console.log("check folder", res);
+            setFoldersQuiz(res.folders);
+        } catch (error) {
+            console.error('Lỗi khi lấy danh sách thư mục quiz:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchFoldersQuiz();
+    }, []);
 
     return (
         <Layout>
@@ -133,7 +150,7 @@ export default function StudyQuiz() {
                                                 {folder.name}
                                             </CardTitle>
                                             <CardDescription>
-                                                {folder.questionCount} câu hỏi
+                                                {folder.num_quizzes} câu hỏi
                                             </CardDescription>
                                         </div>
                                     </div>
@@ -142,31 +159,22 @@ export default function StudyQuiz() {
                             <CardContent className="pt-0">
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between text-sm">
-                                        <span className="text-gray-600">Độ chính xác:</span>
+                                        <span className="text-gray-600">Ngày tạo</span>
                                         <Badge
                                             variant="secondary"
-                                            className={
-                                                (folder.accuracy || 0) >= 80
-                                                    ? "bg-green-100 text-green-700"
-                                                    : (folder.accuracy || 0) >= 60
-                                                        ? "bg-yellow-100 text-yellow-700"
-                                                        : "bg-red-100 text-red-700"
-                                            }
+                                            className="bg-blue-100 text-blue-700"
                                         >
-                                            {folder.accuracy}%
+                                            {new Date(folder.created_at).toLocaleDateString("vi-VN", {
+                                                day: "2-digit",
+                                                month: "2-digit",
+                                                year: "numeric"
+                                            })}
                                         </Badge>
                                     </div>
-                                    {folder.lastReviewed && (
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="text-gray-600">Ôn tập lần cuối:</span>
-                                            <span className="text-gray-500">
-                                                {new Date(folder.lastReviewed).toLocaleDateString(
-                                                    "vi-VN",
-                                                )}
-                                            </span>
-                                        </div>
-                                    )}
-                                    <Button className="w-full bg-green-600 hover:bg-green-700">
+                                    <Button
+                                        className="w-full bg-green-600 hover:bg-green-700"
+                                        onClick={() => navigate(`/user/quizs/review/${folder.id}`, { state: { folder } })}
+                                    >
                                         <RotateCcw className="w-4 h-4 mr-2" />
                                         Bắt đầu ôn tập
                                     </Button>
@@ -189,11 +197,6 @@ export default function StudyQuiz() {
                                 ? "Thử tìm kiếm với từ khóa khác"
                                 : "Tạo câu hỏi trước để bắt đầu ôn tập"}
                         </p>
-                        {!searchTerm && (
-                            <Button className="bg-blue-600 hover:bg-blue-700">
-                                Tạo câu hỏi đầu tiên
-                            </Button>
-                        )}
                     </div>
                 )}
             </div>
