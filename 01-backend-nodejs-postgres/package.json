@@ -37,6 +37,7 @@
     "pdf-parse": "^1.1.1",
     "pdf-poppler": "^0.2.1",
     "pg": "^8.16.2",
+    "socket.io": "^4.8.1",
     "tesseract.js": "^6.0.1",
     "textract": "^2.5.0"
   },

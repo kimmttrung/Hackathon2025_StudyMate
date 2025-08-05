@@ -23,6 +23,7 @@ const folderQuizRoutes = require('../routes/folderQuizRoute');
 const quizRoutes = require('../routes/quizRoutes');
 const aiQuizRouter = require('../routes/aiQuiz.route');
 const friendRouter = require('../routes/friendRoutes');
+const messageRouter = require('../routes/messageRoutes');
 //middleware if having 
 
 //use data routes   
@@ -36,6 +37,7 @@ app.use("/api/folder-quiz", folderQuizRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/quiz/ai", aiQuizRouter);
 app.use("/api/friends", friendRouter);
+app.use("/api/messages", messageRouter);
 
 app.use((req, res) => {
     res.status(404).json({ error: "Not Found" });

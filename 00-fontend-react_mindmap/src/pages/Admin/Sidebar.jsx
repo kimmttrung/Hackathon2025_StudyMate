@@ -14,6 +14,21 @@ const Sidebar = () => {
         return location.pathname.startsWith(path);
     };
 
+    function getUserIdFromToken() {
+        const access_token = localStorage.getItem("access_token");
+        if (!access_token) return null;
+        try {
+            const payloadBase64 = access_token.split('.')[1];
+            const payload = JSON.parse(atob(payloadBase64));
+            return payload.id;
+        } catch (err) {
+            console.error("Token invalid:", err);
+            return null;
+        }
+    }
+
+    const user_id = getUserIdFromToken();
+
     return (
         <div className={`h-screen bg-slate-800 text-white flex flex-col justify-between transition-all duration-300 shadow-xl ${collapsed ? 'w-20' : 'w-64'}`}>
 
@@ -60,8 +75,8 @@ const Sidebar = () => {
                     <SidebarItem
                         icon={<MessageCircle className="w-5 h-5" />}
                         label="Chat"
-                        to="/user/chat"
-                        active={isActive("/user/chat")}
+                        to={`/user/chat/${user_id}`}
+                        active={isActive(`/user/chat/${user_id}`)}
                         collapsed={collapsed}
                     />
                     <SidebarItem

@@ -20,12 +20,15 @@ import {
 import Layout from "@/components/Layout";
 import { toast } from 'react-toastify';
 import axios from "@/utils/axios.customize";
+import { useNavigate } from "react-router-dom";
+
 
 export default function AddFriend() {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterBy, setFilterBy] = useState("all");
     const [viewMode, setViewMode] = useState("grid");
     const [sortBy, setSortBy] = useState("active");
+    const navigate = useNavigate();
 
     const [users, setUsers] = useState([]);
 
@@ -73,7 +76,7 @@ export default function AddFriend() {
     };
 
     const handleStartChat = (userId) => {
-        console.log("Starting chat with user:", userId);
+        navigate(`/user/chat/${userId}`);
     };
 
     const sanitizeUserData = (users) => {

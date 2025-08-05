@@ -69,7 +69,7 @@ const AppRoutes = () => {
           <Route path="discussions" element={<Discussion />} />
           <Route path="discussions/create" element={<CreateDiscussion />} />
 
-          <Route path="chat" element={<Chat />} />
+          <Route path="chat/:userId" element={<Chat />} />
           <Route path="friends" element={<AddFriend />} />
           <Route path="leaderboard" element={<Leaderboard />} />
           <Route path="history" element={<PlaceholderPage />} />
