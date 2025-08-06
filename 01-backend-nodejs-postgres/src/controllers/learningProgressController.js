@@ -3,7 +3,15 @@ const LearningProgressModel = require("../models/learningProgressModel");
 const LearningProgressController = {
     async create(req, res) {
         try {
-            const { user_id, type, reference_id, score, total_items, correct_items, time_taken } = req.body;
+            const {
+                user_id,
+                type,
+                reference_id,
+                score,
+                total_items,
+                correct_items,
+                time_taken
+            } = req.body;
 
             if (!user_id || !type || !reference_id) {
                 return res.status(400).json({ message: "Thiếu thông tin bắt buộc." });
@@ -16,12 +24,12 @@ const LearningProgressController = {
                 score,
                 total_items,
                 correct_items,
-                time_taken
+                time_taken,
             });
 
             res.status(201).json(newRecord);
         } catch (err) {
-            console.error("Lỗi tạo learning progress:", err);
+            console.error("Lỗi tạo learning_progress:", err);
             res.status(500).json({ message: "Lỗi server." });
         }
     },
@@ -29,13 +37,17 @@ const LearningProgressController = {
     async getAllByUser(req, res) {
         try {
             const { user_id } = req.params;
+            if (!user_id) {
+                return res.status(400).json({ message: "Thiếu user_id." });
+            }
+
             const data = await LearningProgressModel.getByUser(user_id);
             res.json(data);
         } catch (err) {
-            console.error("Lỗi lấy dữ liệu:", err);
+            console.error("Lỗi lấy dữ liệu learning_progress:", err);
             res.status(500).json({ message: "Lỗi server." });
         }
-    },
+    }
 };
 
 module.exports = LearningProgressController;

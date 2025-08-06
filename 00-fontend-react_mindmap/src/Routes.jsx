@@ -31,6 +31,7 @@ import Leaderboard from './pages/Features/External/Leaderboard';
 import CreateDiscussion from './pages/Features/Discussion/CreateDiscussion';
 import AddFriend from './pages/Features/External/AddFriend';
 import ReviewPageQuiz from './pages/Features/Quiz/ReviewPageQuiz';
+import Index from './pages/Features/Historie';
 
 const AppRoutes = () => {
   return (
@@ -74,8 +75,9 @@ const AppRoutes = () => {
           <Route path="chat/:userId" element={<Chat />} />
           <Route path="friends" element={<AddFriend />} />
           <Route path="leaderboard" element={<Leaderboard />} />
-          <Route path="history" element={<PlaceholderPage />} />
           <Route path="mindmaps" element={<PlaceholderPage />} />
+
+          <Route path="history" element={<Index />} />
 
 
         </Route>

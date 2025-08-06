@@ -82,6 +82,7 @@ const CreateFlascard = () => {
     const [cardCount, setCardCount] = useState(2);
     const [loading, setLoading] = useState(false);
     const [reloadFlashcards, setReloadFlashcards] = useState(false);
+    const [textInput, setTextInput] = useState("");
 
 
     const recentlyCreated = [
@@ -142,6 +143,46 @@ const CreateFlascard = () => {
             setLoading(false);
         }
     };
+
+    const handleTextGenerate = async () => {
+        if (!textInput.trim()) {
+            toast.error("Vui lòng nhập nội dung văn bản.");
+            return;
+        }
+
+        if (!selectedFolder?.id) {
+            toast.error("Vui lòng chọn thư mục trước.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            // Gọi AI tạo flashcard + lưu + cập nhật luôn ở backend
+            const res = await axios.post("/api/ai/text", {
+                content: textInput,
+                count: cardCount,
+                folder_id: selectedFolder.id, // 👈 Gửi kèm folder_id để backend xử lý
+            });
+
+            const flashcards = res; // Backend đã trả về flashcards đã lưu
+
+            if (!flashcards.length) {
+                toast.error("AI không tạo được flashcards phù hợp.");
+                return;
+            }
+
+            toast.success(`Đã tạo ${flashcards.length} flashcards!`);
+            setTextInput("");
+            setReloadFlashcards(prev => !prev);
+        } catch (err) {
+            console.error("Lỗi AI (text):", err);
+            toast.error("Không thể tạo flashcards.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     const handleAddCardInput = () => {
         setCards((prev) => [
@@ -575,16 +616,20 @@ const CreateFlascard = () => {
                                                     <div className="space-y-2">
                                                         <label className="text-sm font-medium">Chủ đề hoặc nội dung</label>
                                                         <Textarea
+                                                            value={textInput}
+                                                            onChange={(e) => setTextInput(e.target.value)}
                                                             placeholder="VD: Tạo 10 flashcard về từ vựng tiếng Anh chủ đề gia đình..."
                                                             className="min-h-[120px]"
                                                         />
                                                     </div>
+
                                                     <Button
                                                         className="w-full bg-gradient-to-r from-create to-accent text-white"
-                                                        onClick={handleUploadAndGenerate}
+                                                        onClick={handleTextGenerate}
+                                                        disabled={loading}
                                                     >
                                                         <Sparkles className="w-4 h-4 mr-2" />
-                                                        Tạo bằng AI
+                                                        {loading ? "Đang tạo..." : "Tạo bằng AI"}
                                                     </Button>
                                                 </CardContent>
                                             </Card>

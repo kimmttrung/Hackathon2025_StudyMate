@@ -3,6 +3,7 @@ import axios from "@/utils/axios.customize";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import QuizCardList from "./QuizCardList";
 import { Button } from "@/components/ui/button";
+import { toast } from 'react-toastify';
 
 export default function ReviewPageQuiz() {
     const { id } = useParams();
@@ -14,6 +15,21 @@ export default function ReviewPageQuiz() {
     const [answers, setAnswers] = useState({});
     const [submitted, setSubmitted] = useState(false);
     const [timeLeft, setTimeLeft] = useState(600); // 10 phút
+
+    const getUserIdFromToken = () => {
+        const access_token = localStorage.getItem("access_token");
+        const payloadBase64 = access_token.split('.')[1];
+        const payload = JSON.parse(atob(payloadBase64));
+        if (!payload) return null;
+
+        try {
+            return payload.id; // hoặc decoded.user_id tùy backend
+        } catch (err) {
+            console.error("Token invalid:", err);
+            return null;
+        }
+    };
+
 
     // Fetch quiz list
     useEffect(() => {
@@ -48,10 +64,48 @@ export default function ReviewPageQuiz() {
         setAnswers((prev) => ({ ...prev, [quizId]: option }));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         setSubmitted(true);
         window.scrollTo({ top: 0, behavior: "smooth" });
+
+        const correct_items = Object.keys(answers).filter((id) => {
+            const q = quizzes.find((q) => q.id === +id);
+            return q && q.correct_option === answers[id];
+        }).length;
+
+        const total_items = quizzes.length;
+        const scorePercent = Math.round((correct_items / total_items) * 100);
+        const timeTaken = 600 - timeLeft;
+
+        const user_id = getUserIdFromToken();
+        if (!user_id) {
+            console.error("Không xác định được user_id từ token");
+            return;
+        }
+
+        try {
+            await axios.post("/api/quiz-attempt/submit", {
+                user_id,
+                folder_id: folder.id,
+                correct_items,
+                total_items,
+                score: scorePercent,
+                time_taken: timeTaken,
+                questions: quizzes.map((q) => ({
+                    id: q.id,
+                    question: q.question_text,
+                    correct_option: q.correct_option,
+                    selected_option: answers[q.id] || null,
+                    explanation: q.explanation || "",
+                })),
+            });
+
+            toast.success("Lưu kết quả thành công!");
+        } catch (err) {
+            toast.error("Lỗi khi lưu kết quả:", err);
+        }
     };
+
 
     const handleReset = () => {
         setAnswers({});

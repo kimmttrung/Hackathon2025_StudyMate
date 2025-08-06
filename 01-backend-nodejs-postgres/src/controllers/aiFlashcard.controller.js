@@ -97,17 +97,36 @@ ${text}
 // 🧠 Từ input TEXT
 exports.handleTextInput = async (req, res) => {
     try {
-        const { content, count } = req.body;
+        const { content, count, folder_id } = req.body;
 
         if (!content) return res.status(400).json({ error: "Thiếu nội dung." });
 
         const flashcards = await generateFlashcards(content, count);
-        res.status(200).json({ flashcards });
+
+        // Nếu có folder_id thì lưu flashcards vào DB
+        const savedFlashcards = [];
+
+        if (folder_id) {
+            for (const fc of flashcards) {
+                const saved = await flashcardModel.insertFlashcard({
+                    folder_id,
+                    front_text: fc.front,
+                    back_text: fc.back,
+                });
+                savedFlashcards.push(saved);
+            }
+
+            // ✅ Cập nhật số lượng flashcards trong folder
+            await folderModel.updateFlashcardCount(folder_id);
+        }
+
+        res.status(200).json(folder_id ? savedFlashcards : flashcards);
     } catch (error) {
         console.error("Lỗi AI (Text):", error);
         res.status(500).json({ error: "Lỗi xử lý nội dung bằng AI." });
     }
 };
+
 
 // 📁 Từ FILE (PDF, DOC, IMAGE)
 exports.handleFileUpload = async (req, res) => {
