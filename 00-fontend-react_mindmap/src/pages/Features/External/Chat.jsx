@@ -204,7 +204,12 @@ export default function Chat() {
                                                 <div className={`p-3 rounded-lg ${isMe ? 'bg-blue-500 text-white' : 'bg-white text-gray-900 border border-gray-200'}`}>
                                                     <p className="text-sm">{msg.content}</p>
                                                     <p className="text-sm">
-                                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        {msg.created_at
+                                                            ? new Date(msg.created_at.replace(" ", "T")).toLocaleTimeString([], {
+                                                                hour: "2-digit",
+                                                                minute: "2-digit",
+                                                            })
+                                                            : ""}
                                                     </p>
                                                 </div>
                                             </div>
