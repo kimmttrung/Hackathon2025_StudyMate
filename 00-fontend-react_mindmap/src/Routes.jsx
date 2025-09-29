@@ -32,6 +32,7 @@ import CreateDiscussion from './pages/Features/Discussion/CreateDiscussion';
 import AddFriend from './pages/Features/External/AddFriend';
 import ReviewPageQuiz from './pages/Features/Quiz/ReviewPageQuiz';
 import Index from './pages/Features/Historie';
+import MindMapLearn from './pages/Features/Mindmap/MindMapLearn';
 
 const AppRoutes = () => {
   return (
@@ -57,6 +58,8 @@ const AppRoutes = () => {
           <Route path="quizs/test" element={<TestQuiz />} />
           <Route path="quizs/games" element={<GameQuiz />} />
           <Route path="quizs/review/:id" element={<ReviewPageQuiz />} />
+
+          <Route path="mindmaps" element={<MindMapLearn />} />
 
           <Route path="settings" element={<SettingPage />} />
           <Route path="settings/profile" element={<Profile />} />
