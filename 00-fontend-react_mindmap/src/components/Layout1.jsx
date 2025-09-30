@@ -1,9 +1,11 @@
-import Header from "@/components/Header";
+import Header1 from "./Header1";
 
-export default function Layout({ children }) {
+
+
+export default function Layout1({ children }) {
     return (
         <div className="min-h-screen flex flex-col">
-            <Header />
+            <Header1 />
             <main className="flex-1">{children}</main>
             <footer className="border-t">
                 <div className="container py-8 text-sm text-muted-foreground flex flex-col md:flex-row items-center justify-between gap-4">
