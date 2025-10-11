@@ -237,7 +237,7 @@ export default function MindmapEditor() {
                     <div className="flex items-center gap-2">
                         <Button size="sm" variant="ghost" onClick={undo} title="Hoàn tác"><Undo2 className="h-4 w-4" /></Button>
                         <Button size="sm" variant="ghost" onClick={() => redo()} title="Làm lại">↻</Button>
-                        <Button size="sm" variant="ghost" onClick={() => setThemeDark((v) => !v)}>{themeDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</Button>
+                        {/* <Button size="sm" variant="ghost" onClick={() => setThemeDark((v) => !v)}>{themeDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</Button> */}
                         <Button size="sm" variant="outline" onClick={save}><Save className="mr-2 h-4 w-4" />Lưu</Button>
                         <Button size="sm" variant="outline" onClick={exportPNG}><Download className="mr-2 h-4 w-4" />PNG</Button>
                         <Button size="sm" variant="outline" onClick={exportSVG}>SVG</Button>
