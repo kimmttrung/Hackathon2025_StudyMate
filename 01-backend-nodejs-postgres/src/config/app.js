@@ -25,6 +25,7 @@ const friendRouter = require('../routes/friendRoutes');
 const messageRouter = require('../routes/messageRoutes');
 const learningProgressRoutes = require("../routes/learningProgressRoute");
 const quizAttempsRoutes = require("../routes/quizAttemptRoutes");
+const discussionRoutes = require("../routes/discussionRoutes");
 //middleware if having 
 
 //use data routes   
@@ -40,6 +41,7 @@ app.use("/api/friends", friendRouter);
 app.use("/api/messages", messageRouter);
 app.use("/api/learning-progress", learningProgressRoutes);
 app.use("/api/quiz-attempt", quizAttempsRoutes);
+app.use("/api/discussions", discussionRoutes);
 
 app.use((req, res) => {
     res.status(404).json({ error: "Not Found" });

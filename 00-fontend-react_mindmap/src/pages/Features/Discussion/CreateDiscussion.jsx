@@ -18,6 +18,7 @@ import Layout from "@/components/Layout";
 import PostEditor from "./PostEditor";
 import PostSidebar from "./PostSidebar";
 import { marked } from "marked";
+import axios from "@/utils/axios.customize";
 
 export default function CreateDiscussion() {
     const [title, setTitle] = useState("");
@@ -30,46 +31,6 @@ export default function CreateDiscussion() {
     const [fontSize, setFontSize] = useState(16);
     const [textColor, setTextColor] = useState("#000000");
     const [isPreview, setIsPreview] = useState(false);
-
-    const insertMarkdown = (type) => {
-        let syntax = "";
-        switch (type) {
-            case "bold":
-                syntax = "**bold text**";
-                break;
-            case "italic":
-                syntax = "*italic text*";
-                break;
-            case "underline":
-                syntax = "<u>underline text</u>";
-                break;
-            case "quote":
-                syntax = "> quoted text";
-                break;
-            case "code":
-                syntax = "`inline code`";
-                break;
-            case "ul":
-                syntax = "- List item";
-                break;
-            case "ol":
-                syntax = "1. List item";
-                break;
-            case "link":
-                syntax = "[Link](https://example.com)";
-                break;
-            case "image":
-                syntax = "![alt text](image-url)";
-                break;
-            default:
-                return;
-        }
-        setContent((prev) => prev + `\n${syntax}`);
-    };
-
-    const renderMarkdownPreview = (markdownText) => {
-        return marked(markdownText, { sanitize: false });
-    };
 
     const [userPosts, setUserPosts] = useState([
         {
@@ -114,6 +75,48 @@ export default function CreateDiscussion() {
         },
     ]);
 
+
+    const insertMarkdown = (type) => {
+        let syntax = "";
+        switch (type) {
+            case "bold":
+                syntax = "**bold text**";
+                break;
+            case "italic":
+                syntax = "*italic text*";
+                break;
+            case "underline":
+                syntax = "<u>underline text</u>";
+                break;
+            case "quote":
+                syntax = "> quoted text";
+                break;
+            case "code":
+                syntax = "`inline code`";
+                break;
+            case "ul":
+                syntax = "- List item";
+                break;
+            case "ol":
+                syntax = "1. List item";
+                break;
+            case "link":
+                syntax = "[Link](https://example.com)";
+                break;
+            case "image":
+                syntax = "![alt text](image-url)";
+                break;
+            default:
+                return;
+        }
+        setContent((prev) => prev + `\n${syntax}`);
+    };
+
+    const renderMarkdownPreview = (markdownText) => {
+        return marked(markdownText, { sanitize: false });
+    };
+
+
     const loadPostForEditing = (post) => {
         setTitle(post.title);
         setContent(post.content);
@@ -141,6 +144,67 @@ export default function CreateDiscussion() {
         setTags([]);
         setStatus("draft");
         setEditingPostId(null);
+    };
+
+    const getUserIdFromToken = () => {
+        const access_token = localStorage.getItem("access_token");
+        const payloadBase64 = access_token.split('.')[1];
+        const payload = JSON.parse(atob(payloadBase64));
+        if (!payload) return null;
+
+        try {
+            return payload.id; // hoặc decoded.user_id tùy backend
+        } catch (err) {
+            console.error("Token invalid:", err);
+            return null;
+        }
+    };
+
+    const handleSaveDraft = async () => {
+        try {
+            const user_id = getUserIdFromToken();
+            const res = await axios.post("/api/discussions", {
+                title,
+                content,
+                tags,
+                status: "draft",
+                user_id: user_id, // sau này thay bằng user login
+            });
+            alert("Lưu nháp thành công!");
+            clearForm();
+        } catch (err) {
+            console.error(err);
+            alert("Lỗi khi lưu nháp");
+        }
+    };
+
+    const handlePublish = async () => {
+        try {
+            const user_id = getUserIdFromToken();
+            if (editingPostId) {
+                await axios.put(`/api/discussions/${editingPostId}`, {
+                    title,
+                    content,
+                    tags,
+                    status: "published",
+                    user_id: user_id,
+                });
+                alert("Cập nhật bài viết thành công!");
+            } else {
+                await axios.post("/api/discussions", {
+                    title,
+                    content,
+                    tags,
+                    status: "published",
+                    user_id: user_id,
+                });
+                alert("Đăng bài thành công!");
+            }
+            clearForm();
+        } catch (err) {
+            console.error(err);
+            alert("Lỗi khi đăng bài");
+        }
     };
 
     return (
@@ -297,11 +361,18 @@ export default function CreateDiscussion() {
                             </div>
 
                             <div className="flex gap-2">
-                                <Button variant="outline" className="flex-1 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300">
+                                <Button
+                                    variant="outline"
+                                    className="flex-1 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
+                                    onClick={handleSaveDraft}
+                                >
                                     <Save className="w-4 h-4 mr-2" />
                                     {editingPostId ? "Lưu thay đổi" : "Lưu nháp"}
                                 </Button>
-                                <Button className="flex-1 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white">
+                                <Button
+                                    className="flex-1 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white"
+                                    onClick={handlePublish}
+                                >
                                     <Send className="w-4 h-4 mr-2" />
                                     {editingPostId ? "Cập nhật" : "Đăng bài"}
                                 </Button>

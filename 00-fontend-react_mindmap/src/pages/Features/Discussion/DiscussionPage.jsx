@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     MessageCircle,
     ThumbsUp,
@@ -30,98 +30,27 @@ import {
 import Card from "@/components/common/Card";
 import { CardContent } from "@/components/ui/Card";
 import Layout from "@/components/Layout";
+import axios from "@/utils/axios.customize";
 
 export default function Discussion() {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterBy, setFilterBy] = useState("newest");
 
-    const posts = [
-        {
-            id: 1,
-            title: "Cách giải phương trình bậc 2 một cách hiệu quả",
-            content:
-                "Mình đang gặp khó khăn với việc giải phương trình bậc 2, đặc biệt là những trường hợp có delta âm. Các bạn có thể chia sẻ phương pháp hiệu quả không?",
-            author: "Nguyễn Văn A",
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=1",
-            tags: ["toán", "phương trình", "đại số"],
-            views: 234,
-            upvotes: 12,
-            downvotes: 2,
-            comments: 8,
-            time: "2 giờ trước",
-            isPopular: true,
-            isBookmarked: false,
-            status: "published",
-        },
-        {
-            id: 2,
-            title: "Tổng hợp ngữ pháp tiếng Anh lớp 12 - Cần góp ý",
-            content:
-                "Mình đang tổng hợp tất cả ngữ pháp tiếng Anh lớp 12. Đây là bản draft, mọi người góp ý giúp mình nhé!",
-            author: "Trần Thị B",
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=2",
-            tags: ["tiếng anh", "ngữ pháp", "lớp 12"],
-            views: 156,
-            upvotes: 8,
-            downvotes: 0,
-            comments: 5,
-            time: "4 giờ trước",
-            isPopular: false,
-            isBookmarked: true,
-            status: "published",
-        },
-        {
-            id: 3,
-            title: "Phương pháp học thuộc lòng hiệu quả cho môn Lý",
-            content:
-                "Chia sẻ những phương pháp học thuộc lòng công thức vật lý mà mình đã áp dụng và thấy hiệu quả.",
-            author: "Lê Văn C",
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=3",
-            tags: ["vật lý", "phương pháp học", "ghi nhớ"],
-            views: 89,
-            upvotes: 15,
-            downvotes: 1,
-            comments: 3,
-            time: "6 giờ trước",
-            isPopular: true,
-            isBookmarked: false,
-            status: "published",
-        },
-        {
-            id: 4,
-            title: "Cần giúp đỡ: Bài tập hóa học về phản ứng oxi hóa khử",
-            content:
-                "Mình không hiểu cách cân bằng phương trình phản ứng oxi hóa khử. Ai có thể giải thích chi tiết được không?",
-            author: "Phạm Thị D",
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=4",
-            tags: ["hóa học", "oxi hóa khử", "cần giúp"],
-            views: 45,
-            upvotes: 3,
-            downvotes: 0,
-            comments: 0,
-            time: "8 giờ trước",
-            isPopular: false,
-            isBookmarked: false,
-            status: "published",
-        },
-        {
-            id: 5,
-            title: 'Review sách "Nghệ thuật viết văn" - Rất hữu ích!',
-            content:
-                "Vừa đọc xong cuốn sách này và thấy rất bổ ích cho việc học văn. Chia sẻ một số điểm hay trong sách...",
-            author: "Hoàng Văn E",
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=5",
-            tags: ["văn học", "review sách", "kỹ năng viết"],
-            views: 178,
-            upvotes: 20,
-            downvotes: 2,
-            comments: 12,
-            time: "1 ngày trước",
-            isPopular: true,
-            isBookmarked: true,
-            status: "published",
-        },
-    ];
+    const [posts, setPosts] = useState([]);
+
+    // ✅ Gọi API backend
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const res = await axios.get("/api/discussions");
+                console.log("check res", res);
+                setPosts(res);
+            } catch (err) {
+                console.error("Lỗi khi lấy danh sách bài viết:", err);
+            }
+        };
+        fetchPosts();
+    }, []);
 
     const quickStats = [
         { label: "Tổng bài viết", value: "2,847", icon: MessageSquare },
@@ -274,24 +203,30 @@ export default function Discussion() {
                                         </div>
 
                                         {/* Tags */}
-                                        <div className="flex flex-wrap gap-2 mb-4">
+                                        {/* <div className="flex flex-wrap gap-2 mb-4">
                                             {post.tags.map((tag) => (
                                                 <Badge key={tag} variant="outline" className="text-xs hover:bg-blue-50 cursor-pointer">
                                                     #{tag}
                                                 </Badge>
                                             ))}
-                                        </div>
+                                        </div> */}
 
                                         {/* Footer */}
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-4 text-sm text-gray-600">
                                                 <div className="flex items-center gap-2">
-                                                    <img src={post.avatar} alt={post.author} className="w-6 h-6 rounded-full" />
+                                                    <img src={post.avatar} alt={post.username} className="w-6 h-6 rounded-full" />
                                                     <span>{post.author}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <Clock className="w-3 h-3" />
-                                                    {post.time}
+                                                    {new Date(post.created_at).toLocaleString("vi-VN", {
+                                                        day: "2-digit",
+                                                        month: "2-digit",
+                                                        year: "numeric",
+                                                        hour: "2-digit",
+                                                        minute: "2-digit"
+                                                    })}
                                                 </div>
                                             </div>
 
@@ -303,7 +238,7 @@ export default function Discussion() {
                                                     </div>
                                                     <div className="flex items-center gap-1">
                                                         <MessageCircle className="w-4 h-4" />
-                                                        {post.comments}
+                                                        {post.comments_count}
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">
